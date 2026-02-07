@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ESP32 Environment Dashboard</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #1a1f3c, #050814);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+  }
+
+  .dashboard {
+    display: flex;
+    gap: 40px;
+  }
+
+  .card {
+    width: 300px;
+    height: 520px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+
+  .card h2 {
+    margin: 0;
+    color: #22d3ee;
+    letter-spacing: 1px;
+  }
+
+  /* Thermometer */
+  .thermo {
+    margin: 40px auto;
+    width: 40px;
+    height: 260px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, #22d3ee, #fbbf24);
+    border-radius: 25px;
+    transition: height 0.5s ease;
+  }
+
+  .info {
+    background: rgba(255,255,255,0.06);
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 15px;
+  }
+
+  .info span {
+    color: #22d3ee;
+    font-weight: bold;
+  }
+
+  .btn {
+    margin-top: 25px;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(34,211,238,0.4);
+  }
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+  <!-- TEMPERATURE -->
+  <div class="card">
+    <h2>Temperature</h2>
+
+    <div class="thermo">
+      <div class="fill" id="tempFill"></div>
+    </div>
+
+    <div class="info">
+      Current: <span id="tempVal">--</span> °C <br><br>
+      Min: <span id="tempMin">--</span> °C |
+      Max: <span id="tempMax">--</span> °C
+    </div>
+
+    <button class="btn">Details</button>
+  </div>
+
+  <!-- HUMIDITY -->
+  <div class="card">
+    <h2>Humidity</h2>
+
+    <div class="thermo">
+      <div class="fill" id="humFill"></div>
+    </div>
+
+    <div class="info">
+      Current: <span id="humVal">--</span> % <br><br>
+      Min: <span id="humMin">--</span> % |
+      Max: <span id="humMax">--</span> %
+    </div>
+
+    <button class="btn">Details</button>
+  </div>
+
+</div>
+
+<script>
+  // Firebase config (your project)
+  firebase.initializeApp({
+    apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+    databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
+  });
+
+  const db = firebase.database();
+
+  let tMin = 100, tMax = 0;
+  let hMin = 100, hMax = 0;
+
+  // TEMPERATURE
+  db.ref("sensor/temperature").on("value", snap => {
+    const t = snap.val();
+    if (t === null) return;
+
+    tMin = Math.min(tMin, t);
+    tMax = Math.max(tMax, t);
+
+    document.getElementById("tempVal").innerText = t.toFixed(1);
+    document.getElementById("tempMin").innerText = tMin.toFixed(1);
+    document.getElementById("tempMax").innerText = tMax.toFixed(1);
+
+    // Scale 0–50°C
+    document.getElementById("tempFill").style.height = (t / 50 * 100) + "%";
+  });
+
+  // HUMIDITY
+  db.ref("sensor/humidity").on("value", snap => {
+    const h = snap.val();
+    if (h === null) return;
+
+    hMin = Math.min(hMin, h);
+    hMax = Math.max(hMax, h);
+
+    document.getElementById("humVal").innerText = h.toFixed(0);
+    document.getElementById("humMin").innerText = hMin.toFixed(0);
+    document.getElementById("humMax").innerText = hMax.toFixed(0);
+
+    document.getElementById("humFill").style.height = h + "%";
+  });
+</script>
+
+</body>
+</html>
