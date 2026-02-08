@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Agriculture Dashboard</title>
+
+<!-- Firebase SDK (v8 – GitHub Pages compatible) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: radial-gradient(circle at top, #1a1f3c, #050814);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .dashboard {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .card {
+    width: 300px;
+    height: 520px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    border-radius: 25px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .card h2 {
+    margin-top: 0;
+    letter-spacing: 1px;
+    color: #22d3ee;
+  }
+
+  .thermo {
+    margin: 35px auto;
+    width: 42px;
+    height: 260px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 25px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, #22d3ee, #4ade80);
+    border-radius: 25px;
+    transition: height 0.5s ease, background 0.5s ease;
+  }
+
+  .info {
+    margin-top: 15px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 15px;
+    padding: 15px;
+    font-size: 15px;
+  }
+
+  .info span {
+    font-weight: bold;
+    color: #22d3ee;
+  }
+
+  .status {
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  @media (max-width: 1000px) {
+    .card {
+      width: 90%;
+      max-width: 320px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+  <!-- TEMPERATURE CARD -->
+  <div class="card">
+    <h2>Temperature</h2>
+
+    <div class="thermo">
+      <div class="fill" id="tempFill"></div>
+    </div>
+
+    <div class="info">
+      Current: <span id="tempVal">--</span> °C<br><br>
+      Min: <span id="tempMin">--</span> °C |
+      Max: <span id="tempMax">--</span> °C
+    </div>
+
+    <div class="status" id="tempStatus">Status: --</div>
+  </div>
+
+  <!-- HUMIDITY CARD -->
+  <div class="card">
+    <h2>Humidity</h2>
+
+    <div class="thermo">
+      <div class="fill" id="humFill"></div>
+    </div>
+
+    <div class="info">
+      Current: <span id="humVal">--</span> %<br><br>
+      Min: <span id="humMin">--</span> % |
+      Max: <span id="humMax">--</span> %
+    </div>
+
+    <div class="status" id="humStatus">Status: --</div>
+  </div>
+
+  <!-- SOIL MOISTURE CARD -->
+  <div class="card">
+    <h2>Soil Moisture</h2>
+
+    <div class="thermo">
+      <div class="fill" id="soilFill"></div>
+    </div>
+
+    <div class="info">
+      Current: <span id="soilVal">--</span> %<br><br>
+      Min: <span id="soilMin">--</span> % |
+      Max: <span id="soilMax">--</span> %
+    </div>
+
+    <div class="status" id="soilStatus">Status: --</div>
+  </div>
+
+</div>
+
+<script>
+/* ---------------- FIREBASE CONFIG ---------------- */
+firebase.initializeApp({
+  apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+  databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
+});
+
+const db = firebase.database();
+
+/* ---------------- MIN / MAX STORAGE ---------------- */
+let tMin = 100, tMax = -50;
+let hMin = 100, hMax = 0;
+let sMin = 100, sMax = 0;
+
+/* ---------------- TEMPERATURE ---------------- */
+db.ref("sensor/temperature").on("value", snap => {
+  const t = snap.val();
+  if (t === null) return;
+
+  tMin = Math.min(tMin, t);
+  tMax = Math.max(tMax, t);
+
+  document.getElementById("tempVal").innerText = t.toFixed(1);
+  document.getElementById("tempMin").innerText = tMin.toFixed(1);
+  document.getElementById("tempMax").innerText = tMax.toFixed(1);
+
+  document.getElementById("tempFill").style.height = (t / 50 * 100) + "%";
+
+  document.getElementById("tempStatus").innerText =
+    t > 35 ? "Status: 🔴 High Temperature" :
+    t < 15 ? "Status: 🔵 Low Temperature" :
+             "Status: ✅ Normal";
+});
+
+/* ---------------- HUMIDITY ---------------- */
+db.ref("sensor/humidity").on("value", snap => {
+  const h = snap.val();
+  if (h === null) return;
+
+  hMin = Math.min(hMin, h);
+  hMax = Math.max(hMax, h);
+
+  document.getElementById("humVal").innerText = h.toFixed(0);
+  document.getElementById("humMin").innerText = hMin.toFixed(0);
+  document.getElementById("humMax").innerText = hMax.toFixed(0);
+
+  document.getElementById("humFill").style.height = h + "%";
+
+  document.getElementById("humStatus").innerText =
+    h < 40 ? "Status: ⚠️ Dry Air" :
+    h > 80 ? "Status: 💧 Very Humid" :
+             "Status: ✅ Normal";
+});
+
+/* ---------------- SOIL MOISTURE ---------------- */
+db.ref("sensor/soil").on("value", snap => {
+  const s = snap.val();
+  if (s === null) return;
+
+  sMin = Math.min(sMin, s);
+  sMax = Math.max(sMax, s);
+
+  document.getElementById("soilVal").innerText = s;
+  document.getElementById("soilMin").innerText = sMin;
+  document.getElementById("soilMax").innerText = sMax;
+
+  const fill = document.getElementById("soilFill");
+  fill.style.height = s + "%";
+
+  if (s < 30) {
+    fill.style.background = "red";
+    document.getElementById("soilStatus").innerText = "Status: 🚨 Needs Water";
+  } else if (s < 50) {
+    fill.style.background = "orange";
+    document.getElementById("soilStatus").innerText = "Status: ⚠️ Dry";
+  } else {
+    fill.style.background = "linear-gradient(180deg,#22d3ee,#4ade80)";
+    document.getElementById("soilStatus").innerText = "Status: ✅ Optimal";
+  }
+});
+</script>
+
+</body>
+</html>
