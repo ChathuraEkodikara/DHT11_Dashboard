@@ -1,62 +1,63 @@
-  <!-- Updated -->
-
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Smart Agriculture Dashboard</title>
+<meta charset="UTF-8">
+<title>Smart Agriculture Dashboard</title>
 
-  <!-- Firebase SDK v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+}
 
-    h1 {
-      margin-bottom: 10px;
-    }
+h1 {
+  margin-bottom: 10px;
+}
 
-    .status-box {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
+.status-box {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
 
-    .container {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
+.container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
 
-    .card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 15px;
-      width: 250px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  width: 260px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
 
-    .value {
-      font-size: 28px;
-      margin-top: 10px;
-    }
+.value {
+  font-size: 30px;
+  margin-top: 10px;
+}
 
-    .online {
-      color: #22c55e;
-    }
+.sensor-status {
+  margin-top: 10px;
+  font-size: 16px;
+}
 
-    .offline {
-      color: #ef4444;
-    }
-  </style>
+.online { color: #22c55e; }
+.offline { color: #ef4444; }
+.normal { color: #22c55e; }
+.warning { color: #facc15; }
+.danger { color: #ef4444; }
+
+</style>
 </head>
 
 <body>
@@ -72,71 +73,133 @@
   <div class="card">
     <h3>🌡 Temperature</h3>
     <div class="value"><span id="temp">--</span> °C</div>
+    <div class="sensor-status" id="tempStatus">--</div>
   </div>
 
   <div class="card">
     <h3>💧 Humidity</h3>
     <div class="value"><span id="humidity">--</span> %</div>
+    <div class="sensor-status" id="humStatus">--</div>
   </div>
 
   <div class="card">
     <h3>🌾 Soil Moisture</h3>
     <div class="value"><span id="soil">--</span> %</div>
+    <div class="sensor-status" id="soilStatus">--</div>
   </div>
 
 </div>
 
 <script>
 
-  // Firebase Config
-  firebase.initializeApp({
-    apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
-    databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
-  });
+// 🔥 Replace with your real API key
+firebase.initializeApp({
+  apiKey: "YOUR_API_KEY",
+  databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
+});
 
-  const db = firebase.database();
+const db = firebase.database();
 
-  /* ---------------- SENSOR DATA ---------------- */
+/* ---------------- TEMPERATURE ---------------- */
+db.ref("sensor/temperature").on("value", snap => {
+  if (!snap.exists()) return;
 
-  db.ref("sensor/temperature").on("value", snap => {
-    if (snap.exists())
-      document.getElementById("temp").innerText = snap.val().toFixed(1);
-  });
+  const temp = snap.val();
+  document.getElementById("temp").innerText = temp.toFixed(1);
 
-  db.ref("sensor/humidity").on("value", snap => {
-    if (snap.exists())
-      document.getElementById("humidity").innerText = snap.val();
-  });
+  let statusText = "";
+  let statusClass = "";
 
-  db.ref("sensor/soil").on("value", snap => {
-    if (snap.exists())
-      document.getElementById("soil").innerText = snap.val();
-  });
+  if (temp < 15) {
+    statusText = "🔵 Too Cold";
+    statusClass = "warning";
+  } else if (temp > 35) {
+    statusText = "🔴 Too Hot";
+    statusClass = "danger";
+  } else {
+    statusText = "🟢 Normal";
+    statusClass = "normal";
+  }
 
-  /* ---------------- DEVICE STATUS ---------------- */
+  const el = document.getElementById("tempStatus");
+  el.innerText = statusText;
+  el.className = "sensor-status " + statusClass;
+});
 
-  db.ref("device").on("value", snap => {
-    if (!snap.exists()) return;
+/* ---------------- HUMIDITY ---------------- */
+db.ref("sensor/humidity").on("value", snap => {
+  if (!snap.exists()) return;
 
-    const data = snap.val();
-    const lastSeen = data.lastSeen;
+  const hum = snap.val();
+  document.getElementById("humidity").innerText = hum;
 
-    const now = Date.now();
-    const diff = now - lastSeen;
+  let statusText = "";
+  let statusClass = "";
 
-    const statusElement = document.getElementById("deviceStatus");
+  if (hum < 40) {
+    statusText = "⚠ Dry Air";
+    statusClass = "warning";
+  } else if (hum > 80) {
+    statusText = "💧 Very Humid";
+    statusClass = "danger";
+  } else {
+    statusText = "🟢 Normal";
+    statusClass = "normal";
+  }
 
-    if (diff < 10000) {
-      statusElement.innerText = "🟢 ONLINE";
-      statusElement.className = "online";
-    } else {
-      statusElement.innerText = "🔴 OFFLINE";
-      statusElement.className = "offline";
-    }
-  });
+  const el = document.getElementById("humStatus");
+  el.innerText = statusText;
+  el.className = "sensor-status " + statusClass;
+});
+
+/* ---------------- SOIL ---------------- */
+db.ref("sensor/soil").on("value", snap => {
+  if (!snap.exists()) return;
+
+  const soil = snap.val();
+  document.getElementById("soil").innerText = soil;
+
+  let statusText = "";
+  let statusClass = "";
+
+  if (soil < 30) {
+    statusText = "🚨 Needs Water";
+    statusClass = "danger";
+  } else if (soil < 50) {
+    statusText = "⚠ Slightly Dry";
+    statusClass = "warning";
+  } else {
+    statusText = "🟢 Optimal";
+    statusClass = "normal";
+  }
+
+  const el = document.getElementById("soilStatus");
+  el.innerText = statusText;
+  el.className = "sensor-status " + statusClass;
+});
+
+/* ---------------- DEVICE STATUS ---------------- */
+db.ref("device").on("value", snap => {
+  if (!snap.exists()) return;
+
+  const data = snap.val();
+  const lastSeen = data.lastSeen;
+
+  const now = Date.now();
+  const diff = now - lastSeen;
+
+  const statusElement = document.getElementById("deviceStatus");
+
+  if (diff < 10000) {
+    statusElement.innerText = "🟢 ONLINE";
+    statusElement.className = "online";
+  } else {
+    statusElement.innerText = "🔴 OFFLINE";
+    statusElement.className = "offline";
+  }
+});
 
 </script>
 
 </body>
 </html>
-
