@@ -179,14 +179,20 @@ db.ref("sensor/soil").on("value", snap => {
 });
 
 /* ---------------- DEVICE STATUS ---------------- */
-db.ref("device").on("value", snap => {
-  if (!snap.exists()) return;
+let lastSeenTime = 0;
 
-  const data = snap.val();
-  const lastSeen = data.lastSeen;
+db.ref("device/lastSeen").on("value", snap => {
+  if (!snap.exists()) return;
+  lastSeenTime = snap.val();
+});
+
+// Check every 2 seconds
+setInterval(() => {
+
+  if (!lastSeenTime) return;
 
   const now = Date.now();
-  const diff = now - lastSeen;
+  const diff = now - lastSeenTime;
 
   const statusElement = document.getElementById("deviceStatus");
 
@@ -197,9 +203,12 @@ db.ref("device").on("value", snap => {
     statusElement.innerText = "🔴 OFFLINE";
     statusElement.className = "offline";
   }
-});
+
+}, 2000);
+
 
 </script>
 
 </body>
 </html>
+
