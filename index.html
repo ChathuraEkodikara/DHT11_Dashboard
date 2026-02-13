@@ -1,11 +1,10 @@
-<!-- Added wifi strength -->
+<!-- Wifi bars added -->
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Smart Agriculture Dashboard</title>
 
-<!-- Firebase v8 SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -25,8 +24,33 @@ h1 {
 
 .status-box {
   font-size: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
+
+.online { color: #22c55e; }
+.offline { color: #ef4444; }
+
+.signal {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin-left: 10px;
+}
+
+.bar {
+  width: 6px;
+  background: #334155;
+  border-radius: 2px;
+}
+
+.bar.active {
+  background: #22c55e;
+}
+
+.bar:nth-child(1) { height: 6px; }
+.bar:nth-child(2) { height: 10px; }
+.bar:nth-child(3) { height: 14px; }
+.bar:nth-child(4) { height: 18px; }
 
 .container {
   display: flex;
@@ -53,8 +77,6 @@ h1 {
   font-size: 16px;
 }
 
-.online { color: #22c55e; }
-.offline { color: #ef4444; }
 .normal { color: #22c55e; }
 .warning { color: #facc15; }
 .danger { color: #ef4444; }
@@ -67,7 +89,15 @@ h1 {
 <h1>🌱 Smart Agriculture Dashboard</h1>
 
 <div class="status-box">
-  Device Status: <span id="deviceStatus">Checking...</span>
+  Device Status:
+  <span id="deviceStatus">Checking...</span>
+
+  <span class="signal" id="wifiSignal">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </span>
 </div>
 
 <div class="container">
@@ -90,17 +120,9 @@ h1 {
     <div class="sensor-status" id="soilStatus">--</div>
   </div>
 
-  <div class="card">
-    <h3>📶 WiFi Signal</h3>
-    <div class="value"><span id="wifi">--</span> dBm</div>
-    <div class="sensor-status" id="wifiStatus">--</div>
-  </div>
-
 </div>
 
 <script>
-
-/* ---------------- FIREBASE CONFIG ---------------- */
 
 firebase.initializeApp({
   apiKey: "YOUR_API_KEY",
@@ -113,110 +135,63 @@ const db = firebase.database();
 
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
-
   const temp = snap.val();
   document.getElementById("temp").innerText = temp.toFixed(1);
 
   let text, cls;
+  if (temp < 15) { text="🔵 Too Cold"; cls="warning"; }
+  else if (temp > 35) { text="🔴 Too Hot"; cls="danger"; }
+  else { text="🟢 Normal"; cls="normal"; }
 
-  if (temp < 15) {
-    text = "🔵 Too Cold";
-    cls = "warning";
-  } else if (temp > 35) {
-    text = "🔴 Too Hot";
-    cls = "danger";
-  } else {
-    text = "🟢 Normal";
-    cls = "normal";
-  }
-
-  const el = document.getElementById("tempStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("tempStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
 /* ---------------- HUMIDITY ---------------- */
 
 db.ref("sensor/humidity").on("value", snap => {
   if (!snap.exists()) return;
-
   const hum = snap.val();
   document.getElementById("humidity").innerText = hum;
 
   let text, cls;
+  if (hum < 40) { text="⚠ Dry Air"; cls="warning"; }
+  else if (hum > 80) { text="💧 Very Humid"; cls="danger"; }
+  else { text="🟢 Normal"; cls="normal"; }
 
-  if (hum < 40) {
-    text = "⚠ Dry Air";
-    cls = "warning";
-  } else if (hum > 80) {
-    text = "💧 Very Humid";
-    cls = "danger";
-  } else {
-    text = "🟢 Normal";
-    cls = "normal";
-  }
-
-  const el = document.getElementById("humStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("humStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
-/* ---------------- SOIL MOISTURE ---------------- */
+/* ---------------- SOIL ---------------- */
 
 db.ref("sensor/soil").on("value", snap => {
   if (!snap.exists()) return;
-
   const soil = snap.val();
   document.getElementById("soil").innerText = soil;
 
   let text, cls;
+  if (soil < 30) { text="🚨 Needs Water"; cls="danger"; }
+  else if (soil < 50) { text="⚠ Slightly Dry"; cls="warning"; }
+  else { text="🟢 Optimal"; cls="normal"; }
 
-  if (soil < 30) {
-    text = "🚨 Needs Water";
-    cls = "danger";
-  } else if (soil < 50) {
-    text = "⚠ Slightly Dry";
-    cls = "warning";
-  } else {
-    text = "🟢 Optimal";
-    cls = "normal";
-  }
-
-  const el = document.getElementById("soilStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("soilStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
 /* ---------------- WIFI SIGNAL ---------------- */
 
+let wifiRSSI = null;
+
 db.ref("device/wifiRSSI").on("value", snap => {
   if (!snap.exists()) return;
-
-  const rssi = snap.val();
-  document.getElementById("wifi").innerText = rssi;
-
-  let text, cls;
-
-  if (rssi > -50) {
-    text = "🟢 Excellent";
-    cls = "normal";
-  } else if (rssi > -65) {
-    text = "🟢 Good";
-    cls = "normal";
-  } else if (rssi > -75) {
-    text = "⚠ Weak";
-    cls = "warning";
-  } else {
-    text = "🔴 Very Weak";
-    cls = "danger";
-  }
-
-  const el = document.getElementById("wifiStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  wifiRSSI = snap.val();
 });
 
-/* ---------------- DEVICE ONLINE/OFFLINE ---------------- */
+/* ---------------- DEVICE STATUS ---------------- */
 
 let lastSeenTime = 0;
 
@@ -227,20 +202,36 @@ db.ref("device/lastSeen").on("value", snap => {
 
 setInterval(() => {
 
+  const statusEl = document.getElementById("deviceStatus");
+  const bars = document.querySelectorAll("#wifiSignal .bar");
+
   if (!lastSeenTime) return;
 
   const now = Date.now();
   const diff = now - lastSeenTime;
 
-  const el = document.getElementById("deviceStatus");
-
   if (diff < 10000) {
-    el.innerText = "🟢 ONLINE";
-    el.className = "online";
+    statusEl.innerText = "🟢 ONLINE";
+    statusEl.className = "online";
   } else {
-    el.innerText = "🔴 OFFLINE";
-    el.className = "offline";
+    statusEl.innerText = "🔴 OFFLINE";
+    statusEl.className = "offline";
   }
+
+  /* ---- Update WiFi Bars ---- */
+
+  let level = 0;
+
+  if (wifiRSSI > -50) level = 4;
+  else if (wifiRSSI > -65) level = 3;
+  else if (wifiRSSI > -75) level = 2;
+  else if (wifiRSSI > -85) level = 1;
+  else level = 0;
+
+  bars.forEach((bar, index) => {
+    if (index < level) bar.classList.add("active");
+    else bar.classList.remove("active");
+  });
 
 }, 2000);
 
