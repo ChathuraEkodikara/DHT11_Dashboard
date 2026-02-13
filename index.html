@@ -210,11 +210,12 @@ setInterval(() => {
   const now = Date.now();
   const diff = now - lastSeenTime;
 
+  // DEVICE ONLINE
   if (diff < 10000) {
+
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
 
-    // Update WiFi Bars
     let level = 0;
 
     if (wifiRSSI !== null) {
@@ -230,19 +231,24 @@ setInterval(() => {
       else bar.classList.remove("active");
     });
 
-  } else {
+  }
+  // DEVICE OFFLINE
+  else {
+
     statusEl.innerText = "🔴 OFFLINE";
     statusEl.className = "offline";
 
-    // Turn off WiFi bars when offline
+    // Force WiFi bars OFF when device offline
     bars.forEach(bar => bar.classList.remove("active"));
   }
 
 }, 2000);
 
+
 </script>
 
 </body>
 </html>
+
 
 
