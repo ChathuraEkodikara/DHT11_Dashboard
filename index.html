@@ -1,9 +1,11 @@
+<!-- Added wifi strength -->
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Smart Agriculture Dashboard</title>
 
+<!-- Firebase v8 SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -88,11 +90,18 @@ h1 {
     <div class="sensor-status" id="soilStatus">--</div>
   </div>
 
+  <div class="card">
+    <h3>📶 WiFi Signal</h3>
+    <div class="value"><span id="wifi">--</span> dBm</div>
+    <div class="sensor-status" id="wifiStatus">--</div>
+  </div>
+
 </div>
 
 <script>
 
-// 🔥 Replace with your real API key
+/* ---------------- FIREBASE CONFIG ---------------- */
+
 firebase.initializeApp({
   apiKey: "YOUR_API_KEY",
   databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
@@ -101,84 +110,114 @@ firebase.initializeApp({
 const db = firebase.database();
 
 /* ---------------- TEMPERATURE ---------------- */
+
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
 
   const temp = snap.val();
   document.getElementById("temp").innerText = temp.toFixed(1);
 
-  let statusText = "";
-  let statusClass = "";
+  let text, cls;
 
   if (temp < 15) {
-    statusText = "🔵 Too Cold";
-    statusClass = "warning";
+    text = "🔵 Too Cold";
+    cls = "warning";
   } else if (temp > 35) {
-    statusText = "🔴 Too Hot";
-    statusClass = "danger";
+    text = "🔴 Too Hot";
+    cls = "danger";
   } else {
-    statusText = "🟢 Normal";
-    statusClass = "normal";
+    text = "🟢 Normal";
+    cls = "normal";
   }
 
   const el = document.getElementById("tempStatus");
-  el.innerText = statusText;
-  el.className = "sensor-status " + statusClass;
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
 /* ---------------- HUMIDITY ---------------- */
+
 db.ref("sensor/humidity").on("value", snap => {
   if (!snap.exists()) return;
 
   const hum = snap.val();
   document.getElementById("humidity").innerText = hum;
 
-  let statusText = "";
-  let statusClass = "";
+  let text, cls;
 
   if (hum < 40) {
-    statusText = "⚠ Dry Air";
-    statusClass = "warning";
+    text = "⚠ Dry Air";
+    cls = "warning";
   } else if (hum > 80) {
-    statusText = "💧 Very Humid";
-    statusClass = "danger";
+    text = "💧 Very Humid";
+    cls = "danger";
   } else {
-    statusText = "🟢 Normal";
-    statusClass = "normal";
+    text = "🟢 Normal";
+    cls = "normal";
   }
 
   const el = document.getElementById("humStatus");
-  el.innerText = statusText;
-  el.className = "sensor-status " + statusClass;
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
-/* ---------------- SOIL ---------------- */
+/* ---------------- SOIL MOISTURE ---------------- */
+
 db.ref("sensor/soil").on("value", snap => {
   if (!snap.exists()) return;
 
   const soil = snap.val();
   document.getElementById("soil").innerText = soil;
 
-  let statusText = "";
-  let statusClass = "";
+  let text, cls;
 
   if (soil < 30) {
-    statusText = "🚨 Needs Water";
-    statusClass = "danger";
+    text = "🚨 Needs Water";
+    cls = "danger";
   } else if (soil < 50) {
-    statusText = "⚠ Slightly Dry";
-    statusClass = "warning";
+    text = "⚠ Slightly Dry";
+    cls = "warning";
   } else {
-    statusText = "🟢 Optimal";
-    statusClass = "normal";
+    text = "🟢 Optimal";
+    cls = "normal";
   }
 
   const el = document.getElementById("soilStatus");
-  el.innerText = statusText;
-  el.className = "sensor-status " + statusClass;
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
-/* ---------------- DEVICE STATUS ---------------- */
+/* ---------------- WIFI SIGNAL ---------------- */
+
+db.ref("device/wifiRSSI").on("value", snap => {
+  if (!snap.exists()) return;
+
+  const rssi = snap.val();
+  document.getElementById("wifi").innerText = rssi;
+
+  let text, cls;
+
+  if (rssi > -50) {
+    text = "🟢 Excellent";
+    cls = "normal";
+  } else if (rssi > -65) {
+    text = "🟢 Good";
+    cls = "normal";
+  } else if (rssi > -75) {
+    text = "⚠ Weak";
+    cls = "warning";
+  } else {
+    text = "🔴 Very Weak";
+    cls = "danger";
+  }
+
+  const el = document.getElementById("wifiStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+});
+
+/* ---------------- DEVICE ONLINE/OFFLINE ---------------- */
+
 let lastSeenTime = 0;
 
 db.ref("device/lastSeen").on("value", snap => {
@@ -186,7 +225,6 @@ db.ref("device/lastSeen").on("value", snap => {
   lastSeenTime = snap.val();
 });
 
-// Check every 2 seconds
 setInterval(() => {
 
   if (!lastSeenTime) return;
@@ -194,21 +232,19 @@ setInterval(() => {
   const now = Date.now();
   const diff = now - lastSeenTime;
 
-  const statusElement = document.getElementById("deviceStatus");
+  const el = document.getElementById("deviceStatus");
 
   if (diff < 10000) {
-    statusElement.innerText = "🟢 ONLINE";
-    statusElement.className = "online";
+    el.innerText = "🟢 ONLINE";
+    el.className = "online";
   } else {
-    statusElement.innerText = "🔴 OFFLINE";
-    statusElement.className = "offline";
+    el.innerText = "🔴 OFFLINE";
+    el.className = "offline";
   }
 
 }, 2000);
-
 
 </script>
 
 </body>
 </html>
-
