@@ -13,13 +13,11 @@ body {
   background: #0f172a;
   color: white;
   margin: 0;
-  padding: 18px;
+  padding: 20px;
   text-align: center;
 }
 
-h1 {
-  margin-bottom: 10px;
-}
+h1 { margin-bottom: 10px; }
 
 .status-box {
   font-size: 18px;
@@ -40,12 +38,9 @@ h1 {
   width: 6px;
   background: #334155;
   border-radius: 2px;
-  transition: background 0.3s;
 }
 
-.bar.active {
-  background: #22c55e;
-}
+.bar.active { background: #22c55e; }
 
 .bar:nth-child(1) { height: 6px; }
 .bar:nth-child(2) { height: 10px; }
@@ -68,7 +63,7 @@ h1 {
 }
 
 .value {
-  font-size: 30px;
+  font-size: 28px;
   margin-top: 10px;
 }
 
@@ -81,6 +76,23 @@ h1 {
 .warning { color: #facc15; }
 .danger { color: #ef4444; }
 
+select, button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+button {
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
 </style>
 </head>
 
@@ -91,8 +103,8 @@ h1 {
 <div class="status-box">
   Device Status:
   <span id="deviceStatus">Checking...</span>
-  
-  WiFi Strength:
+  |
+  WiFi:
   <span class="signal" id="wifiSignal">
     <div class="bar"></div>
     <div class="bar"></div>
@@ -103,22 +115,41 @@ h1 {
 
 <div class="container">
 
+  <!-- Temperature -->
   <div class="card">
     <h3>🌡 Temperature</h3>
     <div class="value"><span id="temp">--</span> °C</div>
     <div class="sensor-status" id="tempStatus">--</div>
   </div>
 
+  <!-- Humidity -->
   <div class="card">
     <h3>💧 Humidity</h3>
     <div class="value"><span id="humidity">--</span> %</div>
     <div class="sensor-status" id="humStatus">--</div>
   </div>
 
+  <!-- Soil -->
   <div class="card">
     <h3>🌾 Soil Moisture</h3>
     <div class="value"><span id="soil">--</span> %</div>
     <div class="sensor-status" id="soilStatus">--</div>
+  </div>
+
+  <!-- Fan Control -->
+  <div class="card">
+    <h3>🌬 Fan Control</h3>
+
+    <select id="modeSelect">
+      <option value="AUTO">Automatic</option>
+      <option value="MANUAL">Manual</option>
+    </select>
+
+    <br><br>
+
+    <button id="fanBtn">Toggle Fan</button>
+
+    <div class="value" id="fanStatus">--</div>
   </div>
 
 </div>
@@ -128,13 +159,13 @@ h1 {
 /* -------- FIREBASE CONFIG -------- */
 
 firebase.initializeApp({
-  apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+  apiKey: "YOUR_API_KEY",
   databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
 
-/* -------- TEMPERATURE -------- */
+/* -------- SENSOR LISTENERS -------- */
 
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
@@ -142,16 +173,14 @@ db.ref("sensor/temperature").on("value", snap => {
   document.getElementById("temp").innerText = temp.toFixed(1);
 
   let text, cls;
-  if (temp < 15) { text="🔵 Too Cold"; cls="warning"; }
-  else if (temp > 35) { text="🔴 Too Hot"; cls="danger"; }
-  else { text="🟢 Normal"; cls="normal"; }
+  if (temp < 15) { text="Too Cold"; cls="warning"; }
+  else if (temp > 35) { text="Too Hot"; cls="danger"; }
+  else { text="Normal"; cls="normal"; }
 
-  const el = document.getElementById("tempStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("tempStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
-
-/* -------- HUMIDITY -------- */
 
 db.ref("sensor/humidity").on("value", snap => {
   if (!snap.exists()) return;
@@ -159,16 +188,14 @@ db.ref("sensor/humidity").on("value", snap => {
   document.getElementById("humidity").innerText = hum;
 
   let text, cls;
-  if (hum < 40) { text="⚠ Dry Air"; cls="warning"; }
-  else if (hum > 80) { text="💧 Very Humid"; cls="danger"; }
-  else { text="🟢 Normal"; cls="normal"; }
+  if (hum < 40) { text="Dry Air"; cls="warning"; }
+  else if (hum > 80) { text="Very Humid"; cls="danger"; }
+  else { text="Normal"; cls="normal"; }
 
-  const el = document.getElementById("humStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("humStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
-
-/* -------- SOIL -------- */
 
 db.ref("sensor/soil").on("value", snap => {
   if (!snap.exists()) return;
@@ -176,28 +203,59 @@ db.ref("sensor/soil").on("value", snap => {
   document.getElementById("soil").innerText = soil;
 
   let text, cls;
-  if (soil < 30) { text="🚨 Needs Water"; cls="danger"; }
-  else if (soil < 50) { text="⚠ Slightly Dry"; cls="warning"; }
-  else { text="🟢 Optimal"; cls="normal"; }
+  if (soil < 30) { text="Needs Water"; cls="danger"; }
+  else if (soil < 50) { text="Slightly Dry"; cls="warning"; }
+  else { text="Optimal"; cls="normal"; }
 
-  const el = document.getElementById("soilStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("soilStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
-/* -------- WIFI + DEVICE STATUS -------- */
+/* -------- FAN STATUS -------- */
 
-let wifiRSSI = null;
-let lastSeenTime = 0;
-
-db.ref("device/wifiRSSI").on("value", snap => {
+const fanRef = db.ref("sensor/fan");
+fanRef.on("value", snap => {
   if (!snap.exists()) return;
-  wifiRSSI = snap.val();
+  const state = snap.val();
+  document.getElementById("fanStatus").innerText =
+    state ? "🟢 ON" : "🔴 OFF";
 });
+
+/* -------- CONTROL -------- */
+
+const modeRef = db.ref("control/mode");
+const manualRef = db.ref("control/fanManual");
+
+document.getElementById("modeSelect").addEventListener("change", e => {
+  modeRef.set(e.target.value);
+});
+
+document.getElementById("fanBtn").addEventListener("click", () => {
+  manualRef.once("value").then(snap => {
+    const current = snap.val() || false;
+    manualRef.set(!current);
+  });
+});
+
+modeRef.on("value", snap => {
+  if (!snap.exists()) return;
+  document.getElementById("modeSelect").value = snap.val();
+});
+
+/* -------- DEVICE STATUS -------- */
+
+let lastSeenTime = 0;
+let wifiRSSI = null;
 
 db.ref("device/lastSeen").on("value", snap => {
   if (!snap.exists()) return;
   lastSeenTime = snap.val();
+});
+
+db.ref("device/wifiRSSI").on("value", snap => {
+  if (!snap.exists()) return;
+  wifiRSSI = snap.val();
 });
 
 setInterval(() => {
@@ -207,48 +265,34 @@ setInterval(() => {
 
   if (!lastSeenTime) return;
 
-  const now = Date.now();
-  const diff = now - lastSeenTime;
+  const diff = Date.now() - lastSeenTime;
 
-  // DEVICE ONLINE
   if (diff < 10000) {
 
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
 
     let level = 0;
-
-    if (wifiRSSI !== null) {
-      if (wifiRSSI > -50) level = 4;
-      else if (wifiRSSI > -65) level = 3;
-      else if (wifiRSSI > -75) level = 2;
-      else if (wifiRSSI > -85) level = 1;
-      else level = 0;
-    }
+    if (wifiRSSI > -50) level = 4;
+    else if (wifiRSSI > -65) level = 3;
+    else if (wifiRSSI > -75) level = 2;
+    else if (wifiRSSI > -85) level = 1;
 
     bars.forEach((bar, index) => {
       if (index < level) bar.classList.add("active");
       else bar.classList.remove("active");
     });
 
-  }
-  // DEVICE OFFLINE
-  else {
+  } else {
 
     statusEl.innerText = "🔴 OFFLINE";
     statusEl.className = "offline";
-
-    // Force WiFi bars OFF when device offline
     bars.forEach(bar => bar.classList.remove("active"));
   }
 
 }, 2000);
 
-
 </script>
 
 </body>
 </html>
-
-
-
