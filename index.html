@@ -31,7 +31,7 @@ h1 { margin-bottom: 10px; }
   display: inline-flex;
   align-items: flex-end;
   gap: 3px;
-  margin-left: 10px;
+  margin-left: 8px;
 }
 
 .bar {
@@ -58,12 +58,12 @@ h1 { margin-bottom: 10px; }
   background: #1e293b;
   padding: 20px;
   border-radius: 15px;
-  width: 260px;
+  width: 270px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
 .value {
-  font-size: 28px;
+  font-size: 26px;
   margin-top: 10px;
 }
 
@@ -76,11 +76,12 @@ h1 { margin-bottom: 10px; }
 .warning { color: #facc15; }
 .danger { color: #ef4444; }
 
-select, button {
-  padding: 8px 12px;
+select, button, input {
+  padding: 6px;
   border-radius: 8px;
   border: none;
   font-size: 14px;
+  margin-top: 4px;
 }
 
 button {
@@ -93,6 +94,10 @@ button:hover {
   background: #2563eb;
 }
 
+input {
+  width: 80px;
+  text-align: center;
+}
 </style>
 </head>
 
@@ -101,7 +106,7 @@ button:hover {
 <h1>🌱 Smart Agriculture Dashboard</h1>
 
 <div class="status-box">
-  Device Status:
+  Device:
   <span id="deviceStatus">Checking...</span>
   |
   WiFi:
@@ -136,10 +141,11 @@ button:hover {
     <div class="sensor-status" id="soilStatus">--</div>
   </div>
 
-  <!-- Fan Control -->
+  <!-- Fan Control + Thresholds -->
   <div class="card">
     <h3>🌬 Fan Control</h3>
 
+    <label>Mode:</label><br>
     <select id="modeSelect">
       <option value="AUTO">Automatic</option>
       <option value="MANUAL">Manual</option>
@@ -149,6 +155,28 @@ button:hover {
 
     <button id="fanBtn">Toggle Fan</button>
 
+    <br><br>
+
+    <strong>Temperature Thresholds</strong><br>
+    ON:
+    <input type="number" id="tempOnInput">
+    OFF:
+    <input type="number" id="tempOffInput">
+
+    <br><br>
+
+    <strong>Humidity Thresholds</strong><br>
+    ON:
+    <input type="number" id="humOnInput">
+    OFF:
+    <input type="number" id="humOffInput">
+
+    <br><br>
+
+    <button id="saveThresholds">Save Thresholds</button>
+
+    <br><br>
+
     <div class="value" id="fanStatus">--</div>
   </div>
 
@@ -156,16 +184,16 @@ button:hover {
 
 <script>
 
-/* -------- FIREBASE CONFIG -------- */
+/* ---------------- FIREBASE CONFIG ---------------- */
 
 firebase.initializeApp({
-  apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+  apiKey: "YOUR_API_KEY",
   databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
 
-/* -------- SENSOR LISTENERS -------- */
+/* ---------------- SENSOR LISTENERS ---------------- */
 
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
@@ -177,9 +205,9 @@ db.ref("sensor/temperature").on("value", snap => {
   else if (temp > 35) { text="Too Hot"; cls="danger"; }
   else { text="Normal"; cls="normal"; }
 
-  const el=document.getElementById("tempStatus");
-  el.innerText=text;
-  el.className="sensor-status "+cls;
+  const el = document.getElementById("tempStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
 db.ref("sensor/humidity").on("value", snap => {
@@ -192,9 +220,9 @@ db.ref("sensor/humidity").on("value", snap => {
   else if (hum > 80) { text="Very Humid"; cls="danger"; }
   else { text="Normal"; cls="normal"; }
 
-  const el=document.getElementById("humStatus");
-  el.innerText=text;
-  el.className="sensor-status "+cls;
+  const el = document.getElementById("humStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
 db.ref("sensor/soil").on("value", snap => {
@@ -207,55 +235,80 @@ db.ref("sensor/soil").on("value", snap => {
   else if (soil < 50) { text="Slightly Dry"; cls="warning"; }
   else { text="Optimal"; cls="normal"; }
 
-  const el=document.getElementById("soilStatus");
-  el.innerText=text;
-  el.className="sensor-status "+cls;
+  const el = document.getElementById("soilStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
-/* -------- FAN STATUS -------- */
+/* ---------------- FAN STATUS ---------------- */
 
-const fanRef = db.ref("sensor/fan");
-fanRef.on("value", snap => {
+db.ref("sensor/fan").on("value", snap => {
   if (!snap.exists()) return;
-  const state = snap.val();
   document.getElementById("fanStatus").innerText =
-    state ? "🟢 ON" : "🔴 OFF";
+    snap.val() ? "🟢 ON" : "🔴 OFF";
 });
 
-/* -------- CONTROL -------- */
+/* ---------------- CONTROL ---------------- */
 
 const modeRef = db.ref("control/mode");
 const manualRef = db.ref("control/fanManual");
-
-document.getElementById("modeSelect").addEventListener("change", e => {
-  modeRef.set(e.target.value);
-});
-
-document.getElementById("fanBtn").addEventListener("click", () => {
-  manualRef.once("value").then(snap => {
-    const current = snap.val() || false;
-    manualRef.set(!current);
-  });
-});
 
 modeRef.on("value", snap => {
   if (!snap.exists()) return;
   document.getElementById("modeSelect").value = snap.val();
 });
 
-/* -------- DEVICE STATUS -------- */
+document.getElementById("modeSelect").addEventListener("change", e => {
+  modeRef.set(e.target.value);
+});
+
+document.getElementById("fanBtn").addEventListener("click", async () => {
+  const snap = await manualRef.get();
+  const current = snap.exists() ? snap.val() : false;
+  manualRef.set(!current);
+});
+
+/* ---------------- THRESHOLDS ---------------- */
+
+const tempOnRef = db.ref("control/tempOn");
+const tempOffRef = db.ref("control/tempOff");
+const humOnRef = db.ref("control/humOn");
+const humOffRef = db.ref("control/humOff");
+
+tempOnRef.on("value", snap => {
+  if (snap.exists()) document.getElementById("tempOnInput").value = snap.val();
+});
+
+tempOffRef.on("value", snap => {
+  if (snap.exists()) document.getElementById("tempOffInput").value = snap.val();
+});
+
+humOnRef.on("value", snap => {
+  if (snap.exists()) document.getElementById("humOnInput").value = snap.val();
+});
+
+humOffRef.on("value", snap => {
+  if (snap.exists()) document.getElementById("humOffInput").value = snap.val();
+});
+
+document.getElementById("saveThresholds").addEventListener("click", () => {
+  tempOnRef.set(parseFloat(document.getElementById("tempOnInput").value));
+  tempOffRef.set(parseFloat(document.getElementById("tempOffInput").value));
+  humOnRef.set(parseFloat(document.getElementById("humOnInput").value));
+  humOffRef.set(parseFloat(document.getElementById("humOffInput").value));
+});
+
+/* ---------------- DEVICE STATUS ---------------- */
 
 let lastSeenTime = 0;
 let wifiRSSI = null;
 
 db.ref("device/lastSeen").on("value", snap => {
-  if (!snap.exists()) return;
-  lastSeenTime = snap.val();
+  if (snap.exists()) lastSeenTime = snap.val();
 });
 
 db.ref("device/wifiRSSI").on("value", snap => {
-  if (!snap.exists()) return;
-  wifiRSSI = snap.val();
+  if (snap.exists()) wifiRSSI = snap.val();
 });
 
 setInterval(() => {
@@ -278,8 +331,8 @@ setInterval(() => {
     else if (wifiRSSI > -75) level = 2;
     else if (wifiRSSI > -85) level = 1;
 
-    bars.forEach((bar, index) => {
-      if (index < level) bar.classList.add("active");
+    bars.forEach((bar, i) => {
+      if (i < level) bar.classList.add("active");
       else bar.classList.remove("active");
     });
 
@@ -296,4 +349,3 @@ setInterval(() => {
 
 </body>
 </html>
-
