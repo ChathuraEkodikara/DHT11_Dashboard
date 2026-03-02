@@ -47,11 +47,19 @@ h1 { margin-bottom: 10px; }
 .bar:nth-child(3) { height: 14px; }
 .bar:nth-child(4) { height: 18px; }
 
-.container {
+/* FIRST ROW */
+.row {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
   gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+/* SECOND ROW */
+.row-center {
+  display: flex;
+  justify-content: center;
 }
 
 .card {
@@ -76,7 +84,7 @@ h1 { margin-bottom: 10px; }
 .warning { color: #facc15; }
 .danger { color: #ef4444; }
 
-select, button, input {
+select, input {
   padding: 6px;
   border-radius: 8px;
   border: none;
@@ -84,24 +92,61 @@ select, button, input {
   margin-top: 4px;
 }
 
-button {
-  cursor: pointer;
-  background: #3b82f6;
-  color: white;
-}
-
-button:hover {
-  background: #2563eb;
-}
-
-button:disabled {
-  background: #555;
-  cursor: not-allowed;
-}
-
 input {
   width: 70px;
   text-align: center;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  margin-top: 10px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #555;
+  transition: .4s;
+  border-radius: 34px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #22c55e;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+input:disabled + .slider {
+  background-color: #333;
+  cursor: not-allowed;
 }
 </style>
 </head>
@@ -123,30 +168,31 @@ input {
   </span>
 </div>
 
-<div class="container">
+<!-- FIRST ROW -->
+<div class="row">
 
-  <!-- Temperature -->
   <div class="card">
     <h3>🌡 Temperature</h3>
     <div class="value"><span id="temp">--</span> °C</div>
     <div class="sensor-status" id="tempStatus">--</div>
   </div>
 
-  <!-- Humidity -->
   <div class="card">
     <h3>💧 Humidity</h3>
     <div class="value"><span id="humidity">--</span> %</div>
     <div class="sensor-status" id="humStatus">--</div>
   </div>
 
-  <!-- Soil -->
   <div class="card">
     <h3>🌾 Soil Moisture</h3>
     <div class="value"><span id="soil">--</span> %</div>
     <div class="sensor-status" id="soilStatus">--</div>
   </div>
 
-  <!-- Fan Control -->
+</div>
+
+<!-- SECOND ROW -->
+<div class="row-center">
   <div class="card">
     <h3>🌬 Fan Control</h3>
 
@@ -156,11 +202,16 @@ input {
       <option value="MANUAL">Manual</option>
     </select>
 
-    <br><br>
+    <br>
 
-    <button id="fanBtn">Toggle Fan</button>
+    <label class="switch">
+      <input type="checkbox" id="fanSwitch">
+      <span class="slider"></span>
+    </label>
 
-    <br><br>
+    <div class="value" id="fanStatus">--</div>
+
+    <br>
 
     <strong>Temperature Thresholds</strong><br>
     ON:
@@ -179,18 +230,12 @@ input {
     <br><br>
 
     <button id="saveThresholds">Save Thresholds</button>
-
-    <br><br>
-
-    <div class="value" id="fanStatus">--</div>
   </div>
-
 </div>
 
 <script>
 
-/* -------- Firebase Init -------- */
-
+/* Firebase Init */
 firebase.initializeApp({
   apiKey: "YOUR_API_KEY",
   databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
@@ -198,137 +243,73 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-/* -------- Sensor Listeners -------- */
-
+/* Sensor Updates */
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
   const temp = snap.val();
   document.getElementById("temp").innerText = temp.toFixed(1);
-
-  let text, cls;
-  if (temp < 15) { text="Too Cold"; cls="warning"; }
-  else if (temp > 35) { text="Too Hot"; cls="danger"; }
-  else { text="Normal"; cls="normal"; }
-
-  const el=document.getElementById("tempStatus");
-  el.innerText=text;
-  el.className="sensor-status "+cls;
 });
 
 db.ref("sensor/humidity").on("value", snap => {
   if (!snap.exists()) return;
-  const hum = snap.val();
-  document.getElementById("humidity").innerText = hum;
-
-  let text, cls;
-  if (hum < 40) { text="Dry Air"; cls="warning"; }
-  else if (hum > 80) { text="Very Humid"; cls="danger"; }
-  else { text="Normal"; cls="normal"; }
-
-  const el=document.getElementById("humStatus");
-  el.innerText=text;
-  el.className="sensor-status "+cls;
+  document.getElementById("humidity").innerText = snap.val();
 });
 
 db.ref("sensor/soil").on("value", snap => {
   if (!snap.exists()) return;
-  const soil = snap.val();
-  document.getElementById("soil").innerText = soil;
-
-  let text, cls;
-  if (soil < 30) { text="Needs Water"; cls="danger"; }
-  else if (soil < 50) { text="Slightly Dry"; cls="warning"; }
-  else { text="Optimal"; cls="normal"; }
-
-  const el=document.getElementById("soilStatus");
-  el.innerText=text;
-  el.className="sensor-status "+cls;
+  document.getElementById("soil").innerText = snap.val();
 });
 
-/* -------- Fan Status -------- */
-
+/* Fan Status */
+const fanSwitch = document.getElementById("fanSwitch");
 db.ref("sensor/fan").on("value", snap => {
   if (!snap.exists()) return;
+  const state = snap.val();
+  fanSwitch.checked = state;
   document.getElementById("fanStatus").innerText =
-    snap.val() ? "🟢 ON" : "🔴 OFF";
+    state ? "🟢 ON" : "🔴 OFF";
 });
 
-/* -------- Control Logic -------- */
-
+/* Control */
 const modeRef = db.ref("control/mode");
 const manualRef = db.ref("control/fanManual");
 
 modeRef.on("value", snap => {
   if (!snap.exists()) return;
-
   const mode = snap.val();
   document.getElementById("modeSelect").value = mode;
-
-  const fanBtn = document.getElementById("fanBtn");
-
-  if (mode === "AUTO") {
-    fanBtn.disabled = true;
-  } else {
-    fanBtn.disabled = false;
-  }
+  fanSwitch.disabled = (mode === "AUTO");
 });
 
 document.getElementById("modeSelect").addEventListener("change", e => {
   modeRef.set(e.target.value);
 });
 
-document.getElementById("fanBtn").addEventListener("click", async () => {
-  const snap = await manualRef.get();
-  const current = snap.exists() ? snap.val() : false;
-  manualRef.set(!current);
+fanSwitch.addEventListener("change", () => {
+  if (!fanSwitch.disabled)
+    manualRef.set(fanSwitch.checked);
 });
 
-/* -------- Threshold Control -------- */
-
+/* Thresholds */
 const tempOnRef = db.ref("control/tempOn");
 const tempOffRef = db.ref("control/tempOff");
 const humOnRef = db.ref("control/humOn");
 const humOffRef = db.ref("control/humOff");
 
-tempOnRef.on("value", snap => {
-  if (snap.exists())
-    document.getElementById("tempOnInput").value = snap.val();
-});
-
-tempOffRef.on("value", snap => {
-  if (snap.exists())
-    document.getElementById("tempOffInput").value = snap.val();
-});
-
-humOnRef.on("value", snap => {
-  if (snap.exists())
-    document.getElementById("humOnInput").value = snap.val();
-});
-
-humOffRef.on("value", snap => {
-  if (snap.exists())
-    document.getElementById("humOffInput").value = snap.val();
-});
+tempOnRef.on("value", s => { if (s.exists()) tempOnInput.value = s.val(); });
+tempOffRef.on("value", s => { if (s.exists()) tempOffInput.value = s.val(); });
+humOnRef.on("value", s => { if (s.exists()) humOnInput.value = s.val(); });
+humOffRef.on("value", s => { if (s.exists()) humOffInput.value = s.val(); });
 
 document.getElementById("saveThresholds").addEventListener("click", () => {
 
-  let tOn = parseFloat(document.getElementById("tempOnInput").value);
-  let tOff = parseFloat(document.getElementById("tempOffInput").value);
-  let hOn = parseFloat(document.getElementById("humOnInput").value);
-  let hOff = parseFloat(document.getElementById("humOffInput").value);
+  let tOn = parseFloat(tempOnInput.value);
+  let tOff = parseFloat(tempOffInput.value);
+  let hOn = parseFloat(humOnInput.value);
+  let hOff = parseFloat(humOffInput.value);
 
-  if (isNaN(tOn) || isNaN(tOff) || isNaN(hOn) || isNaN(hOff)) {
-    alert("Please enter valid numbers.");
-    return;
-  }
-
-  if (tOff >= tOn) {
-    alert("Temperature OFF must be lower than ON.");
-    return;
-  }
-
-  if (hOff >= hOn) {
-    alert("Humidity OFF must be lower than ON.");
+  if (tOff >= tOn || hOff >= hOn) {
+    alert("OFF value must be lower than ON value.");
     return;
   }
 
@@ -336,55 +317,35 @@ document.getElementById("saveThresholds").addEventListener("click", () => {
   tempOffRef.set(tOff);
   humOnRef.set(hOn);
   humOffRef.set(hOff);
-
-  alert("Thresholds updated successfully!");
 });
 
-/* -------- Device Status -------- */
+/* Device Status */
+let lastSeen = 0, rssi = null;
 
-let lastSeenTime = 0;
-let wifiRSSI = null;
-
-db.ref("device/lastSeen").on("value", snap => {
-  if (snap.exists()) lastSeenTime = snap.val();
-});
-
-db.ref("device/wifiRSSI").on("value", snap => {
-  if (snap.exists()) wifiRSSI = snap.val();
-});
+db.ref("device/lastSeen").on("value", s => { if (s.exists()) lastSeen = s.val(); });
+db.ref("device/wifiRSSI").on("value", s => { if (s.exists()) rssi = s.val(); });
 
 setInterval(() => {
-
   const statusEl = document.getElementById("deviceStatus");
   const bars = document.querySelectorAll("#wifiSignal .bar");
+  if (!lastSeen) return;
 
-  if (!lastSeenTime) return;
-
-  const diff = Date.now() - lastSeenTime;
-
-  if (diff < 10000) {
-
+  if (Date.now() - lastSeen < 10000) {
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
 
     let level = 0;
-    if (wifiRSSI > -50) level = 4;
-    else if (wifiRSSI > -65) level = 3;
-    else if (wifiRSSI > -75) level = 2;
-    else if (wifiRSSI > -85) level = 1;
+    if (rssi > -50) level = 4;
+    else if (rssi > -65) level = 3;
+    else if (rssi > -75) level = 2;
+    else if (rssi > -85) level = 1;
 
-    bars.forEach((bar, i) => {
-      if (i < level) bar.classList.add("active");
-      else bar.classList.remove("active");
-    });
-
+    bars.forEach((b,i)=> b.classList.toggle("active", i<level));
   } else {
-
     statusEl.innerText = "🔴 OFFLINE";
     statusEl.className = "offline";
-    bars.forEach(bar => bar.classList.remove("active"));
+    bars.forEach(b=>b.classList.remove("active"));
   }
-
 }, 2000);
 
 </script>
