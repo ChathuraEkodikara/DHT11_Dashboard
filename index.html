@@ -58,7 +58,7 @@ h1 { margin-bottom: 10px; }
   background: #1e293b;
   padding: 20px;
   border-radius: 15px;
-  width: 270px;
+  width: 280px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
@@ -94,8 +94,13 @@ button:hover {
   background: #2563eb;
 }
 
+button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
 input {
-  width: 80px;
+  width: 70px;
   text-align: center;
 }
 </style>
@@ -141,7 +146,7 @@ input {
     <div class="sensor-status" id="soilStatus">--</div>
   </div>
 
-  <!-- Fan Control + Thresholds -->
+  <!-- Fan Control -->
   <div class="card">
     <h3>🌬 Fan Control</h3>
 
@@ -184,7 +189,7 @@ input {
 
 <script>
 
-/* ---------------- FIREBASE CONFIG ---------------- */
+/* -------- Firebase Init -------- */
 
 firebase.initializeApp({
   apiKey: "YOUR_API_KEY",
@@ -193,7 +198,7 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-/* ---------------- SENSOR LISTENERS ---------------- */
+/* -------- Sensor Listeners -------- */
 
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
@@ -205,9 +210,9 @@ db.ref("sensor/temperature").on("value", snap => {
   else if (temp > 35) { text="Too Hot"; cls="danger"; }
   else { text="Normal"; cls="normal"; }
 
-  const el = document.getElementById("tempStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("tempStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
 db.ref("sensor/humidity").on("value", snap => {
@@ -220,9 +225,9 @@ db.ref("sensor/humidity").on("value", snap => {
   else if (hum > 80) { text="Very Humid"; cls="danger"; }
   else { text="Normal"; cls="normal"; }
 
-  const el = document.getElementById("humStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("humStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
 db.ref("sensor/soil").on("value", snap => {
@@ -235,12 +240,12 @@ db.ref("sensor/soil").on("value", snap => {
   else if (soil < 50) { text="Slightly Dry"; cls="warning"; }
   else { text="Optimal"; cls="normal"; }
 
-  const el = document.getElementById("soilStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+  const el=document.getElementById("soilStatus");
+  el.innerText=text;
+  el.className="sensor-status "+cls;
 });
 
-/* ---------------- FAN STATUS ---------------- */
+/* -------- Fan Status -------- */
 
 db.ref("sensor/fan").on("value", snap => {
   if (!snap.exists()) return;
@@ -248,14 +253,24 @@ db.ref("sensor/fan").on("value", snap => {
     snap.val() ? "🟢 ON" : "🔴 OFF";
 });
 
-/* ---------------- CONTROL ---------------- */
+/* -------- Control Logic -------- */
 
 const modeRef = db.ref("control/mode");
 const manualRef = db.ref("control/fanManual");
 
 modeRef.on("value", snap => {
   if (!snap.exists()) return;
-  document.getElementById("modeSelect").value = snap.val();
+
+  const mode = snap.val();
+  document.getElementById("modeSelect").value = mode;
+
+  const fanBtn = document.getElementById("fanBtn");
+
+  if (mode === "AUTO") {
+    fanBtn.disabled = true;
+  } else {
+    fanBtn.disabled = false;
+  }
 });
 
 document.getElementById("modeSelect").addEventListener("change", e => {
@@ -268,7 +283,7 @@ document.getElementById("fanBtn").addEventListener("click", async () => {
   manualRef.set(!current);
 });
 
-/* ---------------- THRESHOLDS ---------------- */
+/* -------- Threshold Control -------- */
 
 const tempOnRef = db.ref("control/tempOn");
 const tempOffRef = db.ref("control/tempOff");
@@ -276,29 +291,56 @@ const humOnRef = db.ref("control/humOn");
 const humOffRef = db.ref("control/humOff");
 
 tempOnRef.on("value", snap => {
-  if (snap.exists()) document.getElementById("tempOnInput").value = snap.val();
+  if (snap.exists())
+    document.getElementById("tempOnInput").value = snap.val();
 });
 
 tempOffRef.on("value", snap => {
-  if (snap.exists()) document.getElementById("tempOffInput").value = snap.val();
+  if (snap.exists())
+    document.getElementById("tempOffInput").value = snap.val();
 });
 
 humOnRef.on("value", snap => {
-  if (snap.exists()) document.getElementById("humOnInput").value = snap.val();
+  if (snap.exists())
+    document.getElementById("humOnInput").value = snap.val();
 });
 
 humOffRef.on("value", snap => {
-  if (snap.exists()) document.getElementById("humOffInput").value = snap.val();
+  if (snap.exists())
+    document.getElementById("humOffInput").value = snap.val();
 });
 
 document.getElementById("saveThresholds").addEventListener("click", () => {
-  tempOnRef.set(parseFloat(document.getElementById("tempOnInput").value));
-  tempOffRef.set(parseFloat(document.getElementById("tempOffInput").value));
-  humOnRef.set(parseFloat(document.getElementById("humOnInput").value));
-  humOffRef.set(parseFloat(document.getElementById("humOffInput").value));
+
+  let tOn = parseFloat(document.getElementById("tempOnInput").value);
+  let tOff = parseFloat(document.getElementById("tempOffInput").value);
+  let hOn = parseFloat(document.getElementById("humOnInput").value);
+  let hOff = parseFloat(document.getElementById("humOffInput").value);
+
+  if (isNaN(tOn) || isNaN(tOff) || isNaN(hOn) || isNaN(hOff)) {
+    alert("Please enter valid numbers.");
+    return;
+  }
+
+  if (tOff >= tOn) {
+    alert("Temperature OFF must be lower than ON.");
+    return;
+  }
+
+  if (hOff >= hOn) {
+    alert("Humidity OFF must be lower than ON.");
+    return;
+  }
+
+  tempOnRef.set(tOn);
+  tempOffRef.set(tOff);
+  humOnRef.set(hOn);
+  humOffRef.set(hOff);
+
+  alert("Thresholds updated successfully!");
 });
 
-/* ---------------- DEVICE STATUS ---------------- */
+/* -------- Device Status -------- */
 
 let lastSeenTime = 0;
 let wifiRSSI = null;
