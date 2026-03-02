@@ -47,7 +47,7 @@ h1 { margin-bottom: 10px; }
 .bar:nth-child(3) { height: 14px; }
 .bar:nth-child(4) { height: 18px; }
 
-/* FIRST ROW */
+/* Layout */
 .row {
   display: flex;
   justify-content: center;
@@ -56,7 +56,6 @@ h1 { margin-bottom: 10px; }
   margin-bottom: 30px;
 }
 
-/* SECOND ROW */
 .row-center {
   display: flex;
   justify-content: center;
@@ -84,17 +83,27 @@ h1 { margin-bottom: 10px; }
 .warning { color: #facc15; }
 .danger { color: #ef4444; }
 
-select, input {
+select, input, button {
   padding: 6px;
   border-radius: 8px;
   border: none;
   font-size: 14px;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 input {
   width: 70px;
   text-align: center;
+}
+
+button {
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+}
+
+button:hover {
+  background: #2563eb;
 }
 
 /* Toggle Switch */
@@ -237,31 +246,63 @@ input:disabled + .slider {
 
 /* Firebase Init */
 firebase.initializeApp({
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
   databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
 
-/* Sensor Updates */
+/* -------- SENSOR LISTENERS -------- */
+
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
   const temp = snap.val();
   document.getElementById("temp").innerText = temp.toFixed(1);
+
+  let text, cls;
+  if (temp < 15) { text="🔵 Too Cold"; cls="warning"; }
+  else if (temp > 35) { text="🔴 Too Hot"; cls="danger"; }
+  else { text="🟢 Normal"; cls="normal"; }
+
+  const el = document.getElementById("tempStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
 db.ref("sensor/humidity").on("value", snap => {
   if (!snap.exists()) return;
-  document.getElementById("humidity").innerText = snap.val();
+  const hum = snap.val();
+  document.getElementById("humidity").innerText = hum;
+
+  let text, cls;
+  if (hum < 40) { text="⚠ Dry Air"; cls="warning"; }
+  else if (hum > 80) { text="💧 Very Humid"; cls="danger"; }
+  else { text="🟢 Normal"; cls="normal"; }
+
+  const el = document.getElementById("humStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
 db.ref("sensor/soil").on("value", snap => {
   if (!snap.exists()) return;
-  document.getElementById("soil").innerText = snap.val();
+  const soil = snap.val();
+  document.getElementById("soil").innerText = soil;
+
+  let text, cls;
+  if (soil < 30) { text="🚨 Needs Water"; cls="danger"; }
+  else if (soil < 50) { text="⚠ Slightly Dry"; cls="warning"; }
+  else { text="🟢 Optimal"; cls="normal"; }
+
+  const el = document.getElementById("soilStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 });
 
-/* Fan Status */
+/* -------- FAN STATUS -------- */
+
 const fanSwitch = document.getElementById("fanSwitch");
+
 db.ref("sensor/fan").on("value", snap => {
   if (!snap.exists()) return;
   const state = snap.val();
@@ -270,7 +311,8 @@ db.ref("sensor/fan").on("value", snap => {
     state ? "🟢 ON" : "🔴 OFF";
 });
 
-/* Control */
+/* -------- CONTROL -------- */
+
 const modeRef = db.ref("control/mode");
 const manualRef = db.ref("control/fanManual");
 
@@ -290,7 +332,8 @@ fanSwitch.addEventListener("change", () => {
     manualRef.set(fanSwitch.checked);
 });
 
-/* Thresholds */
+/* -------- THRESHOLDS -------- */
+
 const tempOnRef = db.ref("control/tempOn");
 const tempOffRef = db.ref("control/tempOff");
 const humOnRef = db.ref("control/humOn");
@@ -308,8 +351,13 @@ document.getElementById("saveThresholds").addEventListener("click", () => {
   let hOn = parseFloat(humOnInput.value);
   let hOff = parseFloat(humOffInput.value);
 
+  if (isNaN(tOn) || isNaN(tOff) || isNaN(hOn) || isNaN(hOff)) {
+    alert("Enter valid numbers.");
+    return;
+  }
+
   if (tOff >= tOn || hOff >= hOn) {
-    alert("OFF value must be lower than ON value.");
+    alert("OFF must be lower than ON.");
     return;
   }
 
@@ -317,9 +365,12 @@ document.getElementById("saveThresholds").addEventListener("click", () => {
   tempOffRef.set(tOff);
   humOnRef.set(hOn);
   humOffRef.set(hOff);
+
+  alert("Thresholds updated!");
 });
 
-/* Device Status */
+/* -------- DEVICE STATUS -------- */
+
 let lastSeen = 0, rssi = null;
 
 db.ref("device/lastSeen").on("value", s => { if (s.exists()) lastSeen = s.val(); });
