@@ -202,43 +202,6 @@ WiFi:
 </div>
 
 </div>
-
-  <!-- THIRD ROW : SYSTEM HEALTH -->
-
-<div class="row-center">
-
-  <div class="card">
-
-    <h3>🩺 System Health</h3>
-
-    <div class="sensor-status">
-      DHT Sensor :
-      <span id="healthDHT">--</span>
-    </div>
-
-    <div class="sensor-status">
-      Soil Sensor :
-      <span id="healthSoil">--</span>
-    </div>
-
-    <div class="sensor-status">
-      Fan Relay :
-      <span id="healthFan">--</span>
-    </div>
-
-    <div class="sensor-status">
-      Pump Relay :
-      <span id="healthPump">--</span>
-    </div>
-
-    <div class="sensor-status">
-      WiFi :
-      <span id="healthWiFi">--</span>
-    </div>
-
-  </div>
-
-</div>
   
 <!-- CONTROL ROW -->
 
@@ -333,6 +296,43 @@ OFF:
 
 </div>
 
+ <!-- THIRD ROW : SYSTEM HEALTH -->
+
+<div class="row-center">
+
+  <div class="card">
+
+    <h3>🩺 System Health</h3>
+
+    <div class="sensor-status">
+      DHT Sensor :
+      <span id="healthDHT">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Soil Sensor :
+      <span id="healthSoil">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Fan Relay :
+      <span id="healthFan">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Pump Relay :
+      <span id="healthPump">--</span>
+    </div>
+
+    <div class="sensor-status">
+      WiFi :
+      <span id="healthWiFi">--</span>
+    </div>
+
+  </div>
+
+</div>
+  
 <script>
 
 /* Firebase Init */
@@ -640,6 +640,7 @@ db.ref("device/wifiRSSI").on("value", snap => {
 
 </body>
 </html>
+
 
 
 
