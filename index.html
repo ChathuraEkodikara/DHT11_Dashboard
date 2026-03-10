@@ -405,8 +405,53 @@ db.ref("control/soilOff").set(parseInt(soilOffInput.value));
 alert("Soil Settings Saved");
 };
 
+  /* -------- DEVICE STATUS -------- */
+
+let lastSeen = 0;
+let rssi = null;
+
+db.ref("device/lastSeen").on("value", s => {
+  if (s.exists()) lastSeen = s.val();
+});
+
+db.ref("device/wifiRSSI").on("value", s => {
+  if (s.exists()) rssi = s.val();
+});
+
+setInterval(() => {
+
+  const statusEl = document.getElementById("deviceStatus");
+  const bars = document.querySelectorAll("#wifiSignal .bar");
+
+  if (!lastSeen) return;
+
+  if (Date.now() - lastSeen < 10000) {
+
+    statusEl.innerText = "🟢 ONLINE";
+    statusEl.className = "online";
+
+    let level = 0;
+
+    if (rssi > -50) level = 4;
+    else if (rssi > -65) level = 3;
+    else if (rssi > -75) level = 2;
+    else if (rssi > -85) level = 1;
+
+    bars.forEach((b,i)=> b.classList.toggle("active", i < level));
+
+  }
+  else {
+
+    statusEl.innerText = "🔴 OFFLINE";
+    statusEl.className = "offline";
+
+    bars.forEach(b => b.classList.remove("active"));
+  }
+
+}, 2000);
 </script>
 
 </body>
 </html>
+
 
