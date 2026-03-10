@@ -203,10 +203,47 @@ WiFi:
 
 </div>
 
-<!-- CONTROL ROW -->
+  <!-- THIRD ROW : SYSTEM HEALTH -->
 
 <div class="row-center">
 
+  <div class="card">
+
+    <h3>🩺 System Health</h3>
+
+    <div class="sensor-status">
+      DHT Sensor :
+      <span id="healthDHT">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Soil Sensor :
+      <span id="healthSoil">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Fan Relay :
+      <span id="healthFan">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Pump Relay :
+      <span id="healthPump">--</span>
+    </div>
+
+    <div class="sensor-status">
+      WiFi :
+      <span id="healthWiFi">--</span>
+    </div>
+
+  </div>
+
+</div>
+  
+<!-- CONTROL ROW -->
+
+<div class="row-center">
+  
 <!-- FAN CARD -->
 
 <div class="card">
@@ -523,10 +560,87 @@ setInterval(() => {
   }
 
 }, 2000);
+
+  /* -------- SYSTEM HEALTH -------- */
+
+/* DHT Sensor */
+
+db.ref("sensorStatus/dht").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const ok = snap.val();
+
+  document.getElementById("healthDHT").innerText =
+    ok ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+
+/* Soil Sensor */
+
+db.ref("sensorStatus/soil").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const ok = snap.val();
+
+  document.getElementById("healthSoil").innerText =
+    ok ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+
+/* Fan Relay */
+
+db.ref("sensor/fan").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const state = snap.val();
+
+  document.getElementById("healthFan").innerText =
+    state ? "🟢 ACTIVE" : "⚪ IDLE";
+
+});
+
+
+/* Pump Relay */
+
+db.ref("sensor/pump").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const state = snap.val();
+
+  document.getElementById("healthPump").innerText =
+    state ? "🟢 ACTIVE" : "⚪ IDLE";
+
+});
+
+
+/* WiFi Health */
+
+db.ref("device/wifiRSSI").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const rssi = snap.val();
+
+  let strength = "Weak";
+
+  if (rssi > -60) strength = "Strong";
+  else if (rssi > -75) strength = "Medium";
+
+  document.getElementById("healthWiFi").innerText =
+    "🟢 " + strength;
+
+});
 </script>
 
 </body>
 </html>
+
 
 
 
