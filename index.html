@@ -8,150 +8,159 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  margin: 0;
-  padding: 20px;
-  text-align: center;
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+margin:0;
+padding:20px;
+text-align:center;
 }
 
-h1 { margin-bottom: 10px; }
+h1{margin-bottom:10px;}
 
-.status-box {
-  font-size: 18px;
-  margin-bottom: 25px;
+.status-box{
+font-size:18px;
+margin-bottom:25px;
 }
 
-.online { color: #22c55e; }
-.offline { color: #ef4444; }
+.online{color:#22c55e;}
+.offline{color:#ef4444;}
 
-.signal {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 3px;
-  margin-left: 8px;
+.signal{
+display:inline-flex;
+align-items:flex-end;
+gap:3px;
+margin-left:8px;
 }
 
-.bar {
-  width: 6px;
-  background: #334155;
-  border-radius: 2px;
+.bar{
+width:6px;
+background:#334155;
+border-radius:2px;
 }
 
-.bar.active { background: #22c55e; }
+.bar.active{background:#22c55e;}
 
-.bar:nth-child(1) { height: 6px; }
-.bar:nth-child(2) { height: 10px; }
-.bar:nth-child(3) { height: 14px; }
-.bar:nth-child(4) { height: 18px; }
+.bar:nth-child(1){height:6px;}
+.bar:nth-child(2){height:10px;}
+.bar:nth-child(3){height:14px;}
+.bar:nth-child(4){height:18px;}
 
-.row {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
+.row{
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
+margin-bottom:30px;
 }
 
-.row-center {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
+.row-center{
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
 }
 
-.card {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 15px;
-  width: 280px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+width:280px;
+box-shadow:0 4px 20px rgba(0,0,0,0.4);
 }
 
-.value {
-  font-size: 26px;
-  margin-top: 10px;
+.value{
+font-size:26px;
+margin-top:10px;
 }
 
-.sensor-status {
-  margin-top: 10px;
-  font-size: 16px;
+.sensor-status{
+margin-top:10px;
+font-size:16px;
 }
 
-.normal { color: #22c55e; }
-.warning { color: #facc15; }
-.danger { color: #ef4444; }
+.normal{color:#22c55e;}
+.warning{color:#facc15;}
+.danger{color:#ef4444;}
 
-select, input, button {
-  padding: 6px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
-  margin-top: 6px;
+select,input,button{
+padding:6px;
+border-radius:8px;
+border:none;
+font-size:14px;
+margin-top:6px;
 }
 
-input {
-  width: 70px;
-  text-align: center;
+input{
+width:70px;
+text-align:center;
 }
 
-button {
-  cursor: pointer;
-  background: #3b82f6;
-  color: white;
+button{
+cursor:pointer;
+background:#3b82f6;
+color:white;
 }
 
-button:hover {
-  background: #2563eb;
+button:hover{
+background:#2563eb;
 }
 
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  margin-top: 10px;
+/* toggle switch */
+
+.switch{
+position:relative;
+display:inline-block;
+width:60px;
+height:34px;
+margin-top:10px;
 }
 
-.switch input {
-  opacity: 0;
+.switch input{
+opacity:0;
+width:0;
+height:0;
 }
 
-.slider {
-  position: absolute;
-  cursor: pointer;
-  background-color: #555;
-  transition: .4s;
-  border-radius: 34px;
-  top: 0; left: 0; right: 0; bottom: 0;
+.slider{
+position:absolute;
+cursor:pointer;
+background-color:#555;
+transition:.4s;
+border-radius:34px;
+top:0;
+left:0;
+right:0;
+bottom:0;
 }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
+.slider:before{
+position:absolute;
+content:"";
+height:26px;
+width:26px;
+left:4px;
+bottom:4px;
+background:white;
+transition:.4s;
+border-radius:50%;
 }
 
-input:checked + .slider {
-  background-color: #22c55e;
+input:checked + .slider{
+background-color:#22c55e;
 }
 
-input:checked + .slider:before {
-  transform: translateX(26px);
+input:checked + .slider:before{
+transform:translateX(26px);
 }
 
-input:disabled + .slider {
-  background-color: #333;
-  cursor: not-allowed;
+input:disabled + .slider{
+background:#333;
+cursor:not-allowed;
 }
+
 </style>
 </head>
 
@@ -173,6 +182,7 @@ WiFi:
 </div>
 
 <!-- SENSOR ROW -->
+
 <div class="row">
 
 <div class="card">
@@ -196,14 +206,17 @@ WiFi:
 </div>
 
 <!-- CONTROL ROW -->
+
 <div class="row-center">
 
-<!-- FAN CARD (UNCHANGED) -->
+<!-- FAN CARD -->
+
 <div class="card">
 
 <h3>🌬 Fan Control</h3>
 
 <label>Mode:</label><br>
+
 <select id="modeSelect">
 <option value="AUTO">Automatic</option>
 <option value="MANUAL">Manual</option>
@@ -221,16 +234,20 @@ WiFi:
 <br>
 
 <strong>Temperature Thresholds</strong><br>
+
 ON:
 <input type="number" id="tempOnInput">
+
 OFF:
 <input type="number" id="tempOffInput">
 
 <br><br>
 
 <strong>Humidity Thresholds</strong><br>
+
 ON:
 <input type="number" id="humOnInput">
+
 OFF:
 <input type="number" id="humOffInput">
 
@@ -241,11 +258,13 @@ OFF:
 </div>
 
 
-<!-- NEW PUMP CARD -->
+<!-- PUMP CARD (MATCHED STYLE) -->
 
 <div class="card">
 
 <h3>🚿 Pump Control</h3>
+
+<br>
 
 <label class="switch">
 <input type="checkbox" id="pumpSwitch">
@@ -266,7 +285,7 @@ OFF:
 
 <br><br>
 
-<button id="saveSoilThresholds">Save Soil Settings</button>
+<button id="saveSoilThresholds">Save Soil Thresholds</button>
 
 </div>
 
@@ -278,20 +297,22 @@ OFF:
 /* Firebase Init */
 
 firebase.initializeApp({
-apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
-databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
+apiKey:"AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+databaseURL:"https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
-const db = firebase.database();
+const db=firebase.database();
 
 /* SENSOR LISTENERS */
 
-db.ref("sensor/temperature").on("value", s=>{
-if(!s.exists())return;
-let t=s.val();
+db.ref("sensor/temperature").on("value",snap=>{
+if(!snap.exists())return;
+
+let t=snap.val();
 temp.innerText=t.toFixed(1);
 
 let txt,cls;
+
 if(t<15){txt="🔵 Too Cold";cls="warning";}
 else if(t>35){txt="🔴 Too Hot";cls="danger";}
 else{txt="🟢 Normal";cls="normal";}
@@ -300,12 +321,15 @@ tempStatus.innerText=txt;
 tempStatus.className="sensor-status "+cls;
 });
 
-db.ref("sensor/humidity").on("value", s=>{
-if(!s.exists())return;
-let h=s.val();
+
+db.ref("sensor/humidity").on("value",snap=>{
+if(!snap.exists())return;
+
+let h=snap.val();
 humidity.innerText=h;
 
 let txt,cls;
+
 if(h<40){txt="⚠ Dry Air";cls="warning";}
 else if(h>80){txt="💧 Very Humid";cls="danger";}
 else{txt="🟢 Normal";cls="normal";}
@@ -314,12 +338,15 @@ humStatus.innerText=txt;
 humStatus.className="sensor-status "+cls;
 });
 
-db.ref("sensor/soil").on("value", s=>{
-if(!s.exists())return;
-let soil=s.val();
+
+db.ref("sensor/soil").on("value",snap=>{
+if(!snap.exists())return;
+
+let soil=snap.val();
 soil.innerText=soil;
 
 let txt,cls;
+
 if(soil<30){txt="🚨 Needs Water";cls="danger";}
 else if(soil<50){txt="⚠ Slightly Dry";cls="warning";}
 else{txt="🟢 Optimal";cls="normal";}
@@ -328,27 +355,34 @@ soilStatus.innerText=txt;
 soilStatus.className="sensor-status "+cls;
 });
 
+
 /* FAN STATUS */
 
 const fanSwitch=document.getElementById("fanSwitch");
 
-db.ref("sensor/fan").on("value", s=>{
-if(!s.exists())return;
-let st=s.val();
-fanSwitch.checked=st;
-fanStatus.innerText=st?"🟢 ON":"🔴 OFF";
+db.ref("sensor/fan").on("value",snap=>{
+if(!snap.exists())return;
+
+let state=snap.val();
+fanSwitch.checked=state;
+
+fanStatus.innerText=state?"🟢 ON":"🔴 OFF";
 });
+
 
 /* PUMP STATUS */
 
 const pumpSwitch=document.getElementById("pumpSwitch");
 
-db.ref("sensor/pump").on("value", s=>{
-if(!s.exists())return;
-let st=s.val();
-pumpSwitch.checked=st;
-pumpStatus.innerText=st?"🟢 ON":"🔴 OFF";
+db.ref("sensor/pump").on("value",snap=>{
+if(!snap.exists())return;
+
+let state=snap.val();
+pumpSwitch.checked=state;
+
+pumpStatus.innerText=state?"🟢 ON":"🔴 OFF";
 });
+
 
 /* CONTROL */
 
@@ -356,27 +390,34 @@ const modeRef=db.ref("control/mode");
 const fanManual=db.ref("control/fanManual");
 const pumpManual=db.ref("control/pumpManual");
 
-modeRef.on("value", s=>{
-if(!s.exists())return;
-let m=s.val();
-modeSelect.value=m;
-fanSwitch.disabled=(m==="AUTO");
-pumpSwitch.disabled=(m==="AUTO");
+modeRef.on("value",snap=>{
+if(!snap.exists())return;
+
+let mode=snap.val();
+
+modeSelect.value=mode;
+
+fanSwitch.disabled=(mode==="AUTO");
+pumpSwitch.disabled=(mode==="AUTO");
 });
+
 
 modeSelect.addEventListener("change",e=>{
 modeRef.set(e.target.value);
 });
+
 
 fanSwitch.addEventListener("change",()=>{
 if(!fanSwitch.disabled)
 fanManual.set(fanSwitch.checked);
 });
 
+
 pumpSwitch.addEventListener("change",()=>{
 if(!pumpSwitch.disabled)
 pumpManual.set(pumpSwitch.checked);
 });
+
 
 /* THRESHOLDS */
 
@@ -390,21 +431,27 @@ tempOffRef.on("value",s=>{if(s.exists())tempOffInput.value=s.val();});
 humOnRef.on("value",s=>{if(s.exists())humOnInput.value=s.val();});
 humOffRef.on("value",s=>{if(s.exists())humOffInput.value=s.val();});
 
+
 saveThresholds.onclick=()=>{
+
 let tOn=parseFloat(tempOnInput.value);
 let tOff=parseFloat(tempOffInput.value);
 let hOn=parseFloat(humOnInput.value);
 let hOff=parseFloat(humOffInput.value);
 
-if(tOff>=tOn||hOff>=hOn){alert("OFF must be lower");return;}
+if(tOff>=tOn||hOff>=hOn){
+alert("OFF must be lower");
+return;
+}
 
 tempOnRef.set(tOn);
 tempOffRef.set(tOff);
 humOnRef.set(hOn);
 humOffRef.set(hOff);
 
-alert("Thresholds updated!");
+alert("Thresholds updated");
 };
+
 
 /* SOIL THRESHOLDS */
 
@@ -419,7 +466,10 @@ saveSoilThresholds.onclick=()=>{
 let on=parseInt(soilOnInput.value);
 let off=parseInt(soilOffInput.value);
 
-if(off>=on){alert("OFF must be higher than ON");return;}
+if(off>=on){
+alert("OFF must be higher than ON");
+return;
+}
 
 soilOnRef.set(on);
 soilOffRef.set(off);
