@@ -108,8 +108,6 @@ button:hover{
 background:#2563eb;
 }
 
-/* toggle switch */
-
 .switch{
 position:relative;
 display:inline-block;
@@ -258,11 +256,18 @@ OFF:
 </div>
 
 
-<!-- PUMP CARD (MATCHED STYLE) -->
+<!-- PUMP CARD -->
 
 <div class="card">
 
 <h3>🚿 Pump Control</h3>
+
+<label>Mode:</label><br>
+
+<select id="pumpModeSelect">
+<option value="AUTO">Automatic</option>
+<option value="MANUAL">Manual</option>
+</select>
 
 <br>
 
@@ -291,7 +296,6 @@ OFF:
 
 </div>
 
-
 <script>
 
 /* Firebase Init */
@@ -303,178 +307,102 @@ databaseURL:"https://test-project-f4a2b-default-rtdb.firebaseio.com"
 
 const db=firebase.database();
 
-/* SENSOR LISTENERS */
+/* SENSOR DATA */
 
-db.ref("sensor/temperature").on("value",snap=>{
-if(!snap.exists())return;
-
-let t=snap.val();
+db.ref("sensor/temperature").on("value",s=>{
+if(!s.exists())return;
+let t=s.val();
 temp.innerText=t.toFixed(1);
-
-let txt,cls;
-
-if(t<15){txt="🔵 Too Cold";cls="warning";}
-else if(t>35){txt="🔴 Too Hot";cls="danger";}
-else{txt="🟢 Normal";cls="normal";}
-
-tempStatus.innerText=txt;
-tempStatus.className="sensor-status "+cls;
 });
 
-
-db.ref("sensor/humidity").on("value",snap=>{
-if(!snap.exists())return;
-
-let h=snap.val();
-humidity.innerText=h;
-
-let txt,cls;
-
-if(h<40){txt="⚠ Dry Air";cls="warning";}
-else if(h>80){txt="💧 Very Humid";cls="danger";}
-else{txt="🟢 Normal";cls="normal";}
-
-humStatus.innerText=txt;
-humStatus.className="sensor-status "+cls;
+db.ref("sensor/humidity").on("value",s=>{
+if(!s.exists())return;
+humidity.innerText=s.val();
 });
 
-
-db.ref("sensor/soil").on("value",snap=>{
-if(!snap.exists())return;
-
-let soil=snap.val();
-soil.innerText=soil;
-
-let txt,cls;
-
-if(soil<30){txt="🚨 Needs Water";cls="danger";}
-else if(soil<50){txt="⚠ Slightly Dry";cls="warning";}
-else{txt="🟢 Optimal";cls="normal";}
-
-soilStatus.innerText=txt;
-soilStatus.className="sensor-status "+cls;
+db.ref("sensor/soil").on("value",s=>{
+if(!s.exists())return;
+soil.innerText=s.val();
 });
-
 
 /* FAN STATUS */
 
 const fanSwitch=document.getElementById("fanSwitch");
 
-db.ref("sensor/fan").on("value",snap=>{
-if(!snap.exists())return;
-
-let state=snap.val();
-fanSwitch.checked=state;
-
-fanStatus.innerText=state?"🟢 ON":"🔴 OFF";
+db.ref("sensor/fan").on("value",s=>{
+if(!s.exists())return;
+let st=s.val();
+fanSwitch.checked=st;
+fanStatus.innerText=st?"🟢 ON":"🔴 OFF";
 });
-
 
 /* PUMP STATUS */
 
 const pumpSwitch=document.getElementById("pumpSwitch");
 
-db.ref("sensor/pump").on("value",snap=>{
-if(!snap.exists())return;
-
-let state=snap.val();
-pumpSwitch.checked=state;
-
-pumpStatus.innerText=state?"🟢 ON":"🔴 OFF";
+db.ref("sensor/pump").on("value",s=>{
+if(!s.exists())return;
+let st=s.val();
+pumpSwitch.checked=st;
+pumpStatus.innerText=st?"🟢 ON":"🔴 OFF";
 });
 
-
-/* CONTROL */
+/* FAN MODE */
 
 const modeRef=db.ref("control/mode");
 const fanManual=db.ref("control/fanManual");
-const pumpManual=db.ref("control/pumpManual");
 
-modeRef.on("value",snap=>{
-if(!snap.exists())return;
-
-let mode=snap.val();
-
+modeRef.on("value",s=>{
+let mode=s.val();
 modeSelect.value=mode;
-
 fanSwitch.disabled=(mode==="AUTO");
-pumpSwitch.disabled=(mode==="AUTO");
 });
-
 
 modeSelect.addEventListener("change",e=>{
 modeRef.set(e.target.value);
 });
-
 
 fanSwitch.addEventListener("change",()=>{
 if(!fanSwitch.disabled)
 fanManual.set(fanSwitch.checked);
 });
 
+/* PUMP MODE */
+
+const pumpModeRef=db.ref("control/pumpMode");
+const pumpManual=db.ref("control/pumpManual");
+
+pumpModeRef.on("value",s=>{
+let mode=s.val();
+pumpModeSelect.value=mode;
+pumpSwitch.disabled=(mode==="AUTO");
+});
+
+pumpModeSelect.addEventListener("change",e=>{
+pumpModeRef.set(e.target.value);
+});
 
 pumpSwitch.addEventListener("change",()=>{
 if(!pumpSwitch.disabled)
 pumpManual.set(pumpSwitch.checked);
 });
 
-
-/* THRESHOLDS */
-
-const tempOnRef=db.ref("control/tempOn");
-const tempOffRef=db.ref("control/tempOff");
-const humOnRef=db.ref("control/humOn");
-const humOffRef=db.ref("control/humOff");
-
-tempOnRef.on("value",s=>{if(s.exists())tempOnInput.value=s.val();});
-tempOffRef.on("value",s=>{if(s.exists())tempOffInput.value=s.val();});
-humOnRef.on("value",s=>{if(s.exists())humOnInput.value=s.val();});
-humOffRef.on("value",s=>{if(s.exists())humOffInput.value=s.val();});
-
+/* FAN THRESHOLDS */
 
 saveThresholds.onclick=()=>{
-
-let tOn=parseFloat(tempOnInput.value);
-let tOff=parseFloat(tempOffInput.value);
-let hOn=parseFloat(humOnInput.value);
-let hOff=parseFloat(humOffInput.value);
-
-if(tOff>=tOn||hOff>=hOn){
-alert("OFF must be lower");
-return;
-}
-
-tempOnRef.set(tOn);
-tempOffRef.set(tOff);
-humOnRef.set(hOn);
-humOffRef.set(hOff);
-
-alert("Thresholds updated");
+db.ref("control/tempOn").set(parseFloat(tempOnInput.value));
+db.ref("control/tempOff").set(parseFloat(tempOffInput.value));
+db.ref("control/humOn").set(parseFloat(humOnInput.value));
+db.ref("control/humOff").set(parseFloat(humOffInput.value));
+alert("Thresholds Updated");
 };
-
 
 /* SOIL THRESHOLDS */
 
-const soilOnRef=db.ref("control/soilOn");
-const soilOffRef=db.ref("control/soilOff");
-
-soilOnRef.on("value",s=>{if(s.exists())soilOnInput.value=s.val();});
-soilOffRef.on("value",s=>{if(s.exists())soilOffInput.value=s.val();});
-
 saveSoilThresholds.onclick=()=>{
-
-let on=parseInt(soilOnInput.value);
-let off=parseInt(soilOffInput.value);
-
-if(off>=on){
-alert("OFF must be higher than ON");
-return;
-}
-
-soilOnRef.set(on);
-soilOffRef.set(off);
-
-alert("Soil thresholds saved");
+db.ref("control/soilOn").set(parseInt(soilOnInput.value));
+db.ref("control/soilOff").set(parseInt(soilOffInput.value));
+alert("Soil Settings Saved");
 };
 
 </script>
