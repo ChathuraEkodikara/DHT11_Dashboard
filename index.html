@@ -309,22 +309,96 @@ const db=firebase.database();
 
 /* SENSOR DATA */
 
-db.ref("sensor/temperature").on("value",s=>{
-if(!s.exists())return;
-let t=s.val();
-temp.innerText=t.toFixed(1);
+/* -------- SENSOR LISTENERS -------- */
+
+db.ref("sensor/temperature").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const temp = snap.val();
+
+  document.getElementById("temp").innerText = temp.toFixed(1);
+
+  let text, cls;
+
+  if (temp < 15) {
+    text = "🔵 Too Cold";
+    cls = "warning";
+  }
+  else if (temp > 35) {
+    text = "🔴 Too Hot";
+    cls = "danger";
+  }
+  else {
+    text = "🟢 Normal";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("tempStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
 });
 
-db.ref("sensor/humidity").on("value",s=>{
-if(!s.exists())return;
-humidity.innerText=s.val();
+
+db.ref("sensor/humidity").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const hum = snap.val();
+
+  document.getElementById("humidity").innerText = hum;
+
+  let text, cls;
+
+  if (hum < 40) {
+    text = "⚠ Dry Air";
+    cls = "warning";
+  }
+  else if (hum > 80) {
+    text = "💧 Very Humid";
+    cls = "danger";
+  }
+  else {
+    text = "🟢 Normal";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("humStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
 });
 
-db.ref("sensor/soil").on("value",s=>{
-if(!s.exists())return;
-soil.innerText=s.val();
-});
 
+db.ref("sensor/soil").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const soil = snap.val();
+
+  document.getElementById("soil").innerText = soil;
+
+  let text, cls;
+
+  if (soil < 30) {
+    text = "🚨 Needs Water";
+    cls = "danger";
+  }
+  else if (soil < 50) {
+    text = "⚠ Slightly Dry";
+    cls = "warning";
+  }
+  else {
+    text = "🟢 Optimal";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("soilStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
+});
 /* FAN STATUS */
 
 const fanSwitch=document.getElementById("fanSwitch");
@@ -453,5 +527,6 @@ setInterval(() => {
 
 </body>
 </html>
+
 
 
