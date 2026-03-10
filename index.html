@@ -47,7 +47,6 @@ h1 { margin-bottom: 10px; }
 .bar:nth-child(3) { height: 14px; }
 .bar:nth-child(4) { height: 18px; }
 
-/* Layout */
 .row {
   display: flex;
   justify-content: center;
@@ -59,6 +58,8 @@ h1 { margin-bottom: 10px; }
 .row-center {
   display: flex;
   justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .card {
@@ -106,7 +107,6 @@ button:hover {
   background: #2563eb;
 }
 
-/* Toggle Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -117,8 +117,6 @@ button:hover {
 
 .switch input {
   opacity: 0;
-  width: 0;
-  height: 0;
 }
 
 .slider {
@@ -127,10 +125,7 @@ button:hover {
   background-color: #555;
   transition: .4s;
   border-radius: 34px;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
 }
 
 .slider:before {
@@ -165,239 +160,272 @@ input:disabled + .slider {
 <h1>🌱 Smart Agriculture Dashboard</h1>
 
 <div class="status-box">
-  Device:
-  <span id="deviceStatus">Checking...</span>
-  |
-  WiFi:
-  <span class="signal" id="wifiSignal">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-  </span>
+Device:
+<span id="deviceStatus">Checking...</span>
+|
+WiFi:
+<span class="signal" id="wifiSignal">
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+</span>
 </div>
 
-<!-- FIRST ROW -->
+<!-- SENSOR ROW -->
 <div class="row">
 
-  <div class="card">
-    <h3>🌡 Temperature</h3>
-    <div class="value"><span id="temp">--</span> °C</div>
-    <div class="sensor-status" id="tempStatus">--</div>
-  </div>
+<div class="card">
+<h3>🌡 Temperature</h3>
+<div class="value"><span id="temp">--</span> °C</div>
+<div class="sensor-status" id="tempStatus">--</div>
+</div>
 
-  <div class="card">
-    <h3>💧 Humidity</h3>
-    <div class="value"><span id="humidity">--</span> %</div>
-    <div class="sensor-status" id="humStatus">--</div>
-  </div>
+<div class="card">
+<h3>💧 Humidity</h3>
+<div class="value"><span id="humidity">--</span> %</div>
+<div class="sensor-status" id="humStatus">--</div>
+</div>
 
-  <div class="card">
-    <h3>🌾 Soil Moisture</h3>
-    <div class="value"><span id="soil">--</span> %</div>
-    <div class="sensor-status" id="soilStatus">--</div>
-  </div>
+<div class="card">
+<h3>🌾 Soil Moisture</h3>
+<div class="value"><span id="soil">--</span> %</div>
+<div class="sensor-status" id="soilStatus">--</div>
+</div>
 
 </div>
 
-<!-- SECOND ROW -->
+<!-- CONTROL ROW -->
 <div class="row-center">
-  <div class="card">
-    <h3>🌬 Fan Control</h3>
 
-    <label>Mode:</label><br>
-    <select id="modeSelect">
-      <option value="AUTO">Automatic</option>
-      <option value="MANUAL">Manual</option>
-    </select>
+<!-- FAN CARD (UNCHANGED) -->
+<div class="card">
 
-    <br>
+<h3>🌬 Fan Control</h3>
 
-    <label class="switch">
-      <input type="checkbox" id="fanSwitch">
-      <span class="slider"></span>
-    </label>
+<label>Mode:</label><br>
+<select id="modeSelect">
+<option value="AUTO">Automatic</option>
+<option value="MANUAL">Manual</option>
+</select>
 
-    <div class="value" id="fanStatus">--</div>
+<br>
 
-    <br>
+<label class="switch">
+<input type="checkbox" id="fanSwitch">
+<span class="slider"></span>
+</label>
 
-    <strong>Temperature Thresholds</strong><br>
-    ON:
-    <input type="number" id="tempOnInput">
-    OFF:
-    <input type="number" id="tempOffInput">
+<div class="value" id="fanStatus">--</div>
 
-    <br><br>
+<br>
 
-    <strong>Humidity Thresholds</strong><br>
-    ON:
-    <input type="number" id="humOnInput">
-    OFF:
-    <input type="number" id="humOffInput">
+<strong>Temperature Thresholds</strong><br>
+ON:
+<input type="number" id="tempOnInput">
+OFF:
+<input type="number" id="tempOffInput">
 
-    <br><br>
+<br><br>
 
-    <button id="saveThresholds">Save Thresholds</button>
-  </div>
+<strong>Humidity Thresholds</strong><br>
+ON:
+<input type="number" id="humOnInput">
+OFF:
+<input type="number" id="humOffInput">
+
+<br><br>
+
+<button id="saveThresholds">Save Thresholds</button>
+
 </div>
+
+
+<!-- NEW PUMP CARD -->
+
+<div class="card">
+
+<h3>🚿 Pump Control</h3>
+
+<label class="switch">
+<input type="checkbox" id="pumpSwitch">
+<span class="slider"></span>
+</label>
+
+<div class="value" id="pumpStatus">--</div>
+
+<br>
+
+<strong>Soil Moisture Thresholds</strong><br>
+
+ON:
+<input type="number" id="soilOnInput">
+
+OFF:
+<input type="number" id="soilOffInput">
+
+<br><br>
+
+<button id="saveSoilThresholds">Save Soil Settings</button>
+
+</div>
+
+</div>
+
 
 <script>
 
 /* Firebase Init */
+
 firebase.initializeApp({
-  apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
-  databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
+apiKey: "AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+databaseURL: "https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
 
-/* -------- SENSOR LISTENERS -------- */
+/* SENSOR LISTENERS */
 
-db.ref("sensor/temperature").on("value", snap => {
-  if (!snap.exists()) return;
-  const temp = snap.val();
-  document.getElementById("temp").innerText = temp.toFixed(1);
+db.ref("sensor/temperature").on("value", s=>{
+if(!s.exists())return;
+let t=s.val();
+temp.innerText=t.toFixed(1);
 
-  let text, cls;
-  if (temp < 15) { text="🔵 Too Cold"; cls="warning"; }
-  else if (temp > 35) { text="🔴 Too Hot"; cls="danger"; }
-  else { text="🟢 Normal"; cls="normal"; }
+let txt,cls;
+if(t<15){txt="🔵 Too Cold";cls="warning";}
+else if(t>35){txt="🔴 Too Hot";cls="danger";}
+else{txt="🟢 Normal";cls="normal";}
 
-  const el = document.getElementById("tempStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+tempStatus.innerText=txt;
+tempStatus.className="sensor-status "+cls;
 });
 
-db.ref("sensor/humidity").on("value", snap => {
-  if (!snap.exists()) return;
-  const hum = snap.val();
-  document.getElementById("humidity").innerText = hum;
+db.ref("sensor/humidity").on("value", s=>{
+if(!s.exists())return;
+let h=s.val();
+humidity.innerText=h;
 
-  let text, cls;
-  if (hum < 40) { text="⚠ Dry Air"; cls="warning"; }
-  else if (hum > 80) { text="💧 Very Humid"; cls="danger"; }
-  else { text="🟢 Normal"; cls="normal"; }
+let txt,cls;
+if(h<40){txt="⚠ Dry Air";cls="warning";}
+else if(h>80){txt="💧 Very Humid";cls="danger";}
+else{txt="🟢 Normal";cls="normal";}
 
-  const el = document.getElementById("humStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+humStatus.innerText=txt;
+humStatus.className="sensor-status "+cls;
 });
 
-db.ref("sensor/soil").on("value", snap => {
-  if (!snap.exists()) return;
-  const soil = snap.val();
-  document.getElementById("soil").innerText = soil;
+db.ref("sensor/soil").on("value", s=>{
+if(!s.exists())return;
+let soil=s.val();
+soil.innerText=soil;
 
-  let text, cls;
-  if (soil < 30) { text="🚨 Needs Water"; cls="danger"; }
-  else if (soil < 50) { text="⚠ Slightly Dry"; cls="warning"; }
-  else { text="🟢 Optimal"; cls="normal"; }
+let txt,cls;
+if(soil<30){txt="🚨 Needs Water";cls="danger";}
+else if(soil<50){txt="⚠ Slightly Dry";cls="warning";}
+else{txt="🟢 Optimal";cls="normal";}
 
-  const el = document.getElementById("soilStatus");
-  el.innerText = text;
-  el.className = "sensor-status " + cls;
+soilStatus.innerText=txt;
+soilStatus.className="sensor-status "+cls;
 });
 
-/* -------- FAN STATUS -------- */
+/* FAN STATUS */
 
-const fanSwitch = document.getElementById("fanSwitch");
+const fanSwitch=document.getElementById("fanSwitch");
 
-db.ref("sensor/fan").on("value", snap => {
-  if (!snap.exists()) return;
-  const state = snap.val();
-  fanSwitch.checked = state;
-  document.getElementById("fanStatus").innerText =
-    state ? "🟢 ON" : "🔴 OFF";
+db.ref("sensor/fan").on("value", s=>{
+if(!s.exists())return;
+let st=s.val();
+fanSwitch.checked=st;
+fanStatus.innerText=st?"🟢 ON":"🔴 OFF";
 });
 
-/* -------- CONTROL -------- */
+/* PUMP STATUS */
 
-const modeRef = db.ref("control/mode");
-const manualRef = db.ref("control/fanManual");
+const pumpSwitch=document.getElementById("pumpSwitch");
 
-modeRef.on("value", snap => {
-  if (!snap.exists()) return;
-  const mode = snap.val();
-  document.getElementById("modeSelect").value = mode;
-  fanSwitch.disabled = (mode === "AUTO");
+db.ref("sensor/pump").on("value", s=>{
+if(!s.exists())return;
+let st=s.val();
+pumpSwitch.checked=st;
+pumpStatus.innerText=st?"🟢 ON":"🔴 OFF";
 });
 
-document.getElementById("modeSelect").addEventListener("change", e => {
-  modeRef.set(e.target.value);
+/* CONTROL */
+
+const modeRef=db.ref("control/mode");
+const fanManual=db.ref("control/fanManual");
+const pumpManual=db.ref("control/pumpManual");
+
+modeRef.on("value", s=>{
+if(!s.exists())return;
+let m=s.val();
+modeSelect.value=m;
+fanSwitch.disabled=(m==="AUTO");
+pumpSwitch.disabled=(m==="AUTO");
 });
 
-fanSwitch.addEventListener("change", () => {
-  if (!fanSwitch.disabled)
-    manualRef.set(fanSwitch.checked);
+modeSelect.addEventListener("change",e=>{
+modeRef.set(e.target.value);
 });
 
-/* -------- THRESHOLDS -------- */
-
-const tempOnRef = db.ref("control/tempOn");
-const tempOffRef = db.ref("control/tempOff");
-const humOnRef = db.ref("control/humOn");
-const humOffRef = db.ref("control/humOff");
-
-tempOnRef.on("value", s => { if (s.exists()) tempOnInput.value = s.val(); });
-tempOffRef.on("value", s => { if (s.exists()) tempOffInput.value = s.val(); });
-humOnRef.on("value", s => { if (s.exists()) humOnInput.value = s.val(); });
-humOffRef.on("value", s => { if (s.exists()) humOffInput.value = s.val(); });
-
-document.getElementById("saveThresholds").addEventListener("click", () => {
-
-  let tOn = parseFloat(tempOnInput.value);
-  let tOff = parseFloat(tempOffInput.value);
-  let hOn = parseFloat(humOnInput.value);
-  let hOff = parseFloat(humOffInput.value);
-
-  if (isNaN(tOn) || isNaN(tOff) || isNaN(hOn) || isNaN(hOff)) {
-    alert("Enter valid numbers.");
-    return;
-  }
-
-  if (tOff >= tOn || hOff >= hOn) {
-    alert("OFF must be lower than ON.");
-    return;
-  }
-
-  tempOnRef.set(tOn);
-  tempOffRef.set(tOff);
-  humOnRef.set(hOn);
-  humOffRef.set(hOff);
-
-  alert("Thresholds updated!");
+fanSwitch.addEventListener("change",()=>{
+if(!fanSwitch.disabled)
+fanManual.set(fanSwitch.checked);
 });
 
-/* -------- DEVICE STATUS -------- */
+pumpSwitch.addEventListener("change",()=>{
+if(!pumpSwitch.disabled)
+pumpManual.set(pumpSwitch.checked);
+});
 
-let lastSeen = 0, rssi = null;
+/* THRESHOLDS */
 
-db.ref("device/lastSeen").on("value", s => { if (s.exists()) lastSeen = s.val(); });
-db.ref("device/wifiRSSI").on("value", s => { if (s.exists()) rssi = s.val(); });
+const tempOnRef=db.ref("control/tempOn");
+const tempOffRef=db.ref("control/tempOff");
+const humOnRef=db.ref("control/humOn");
+const humOffRef=db.ref("control/humOff");
 
-setInterval(() => {
-  const statusEl = document.getElementById("deviceStatus");
-  const bars = document.querySelectorAll("#wifiSignal .bar");
-  if (!lastSeen) return;
+tempOnRef.on("value",s=>{if(s.exists())tempOnInput.value=s.val();});
+tempOffRef.on("value",s=>{if(s.exists())tempOffInput.value=s.val();});
+humOnRef.on("value",s=>{if(s.exists())humOnInput.value=s.val();});
+humOffRef.on("value",s=>{if(s.exists())humOffInput.value=s.val();});
 
-  if (Date.now() - lastSeen < 10000) {
-    statusEl.innerText = "🟢 ONLINE";
-    statusEl.className = "online";
+saveThresholds.onclick=()=>{
+let tOn=parseFloat(tempOnInput.value);
+let tOff=parseFloat(tempOffInput.value);
+let hOn=parseFloat(humOnInput.value);
+let hOff=parseFloat(humOffInput.value);
 
-    let level = 0;
-    if (rssi > -50) level = 4;
-    else if (rssi > -65) level = 3;
-    else if (rssi > -75) level = 2;
-    else if (rssi > -85) level = 1;
+if(tOff>=tOn||hOff>=hOn){alert("OFF must be lower");return;}
 
-    bars.forEach((b,i)=> b.classList.toggle("active", i<level));
-  } else {
-    statusEl.innerText = "🔴 OFFLINE";
-    statusEl.className = "offline";
-    bars.forEach(b=>b.classList.remove("active"));
-  }
-}, 2000);
+tempOnRef.set(tOn);
+tempOffRef.set(tOff);
+humOnRef.set(hOn);
+humOffRef.set(hOff);
+
+alert("Thresholds updated!");
+};
+
+/* SOIL THRESHOLDS */
+
+const soilOnRef=db.ref("control/soilOn");
+const soilOffRef=db.ref("control/soilOff");
+
+soilOnRef.on("value",s=>{if(s.exists())soilOnInput.value=s.val();});
+soilOffRef.on("value",s=>{if(s.exists())soilOffInput.value=s.val();});
+
+saveSoilThresholds.onclick=()=>{
+
+let on=parseInt(soilOnInput.value);
+let off=parseInt(soilOffInput.value);
+
+if(off>=on){alert("OFF must be higher than ON");return;}
+
+soilOnRef.set(on);
+soilOffRef.set(off);
+
+alert("Soil thresholds saved");
+};
 
 </script>
 
