@@ -538,7 +538,7 @@ setInterval(() => {
 
   if (!lastSeen) return;
 
-  if (Date.now() - lastSeen < 10000) {
+  if (Date.now() - lastSeen < 20000) {
 
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
@@ -634,6 +634,7 @@ db.ref("device/wifiRSSI").on("value", snap => {
 
 </body>
 </html>
+
 
 
 
