@@ -562,18 +562,16 @@ setInterval(() => {
 
 }, 2000);
 
-  /* -------- SYSTEM HEALTH -------- */
+ /* -------- SYSTEM HEALTH -------- */
 
 /* DHT Sensor */
 
 db.ref("sensorStatus/dht").on("value", snap => {
 
-  if (!snap.exists()) return;
-
   const ok = snap.val();
 
   document.getElementById("healthDHT").innerText =
-    ok ? "🟢 OK" : "🔴 ERROR";
+    ok === true ? "🟢 OK" : "🔴 ERROR";
 
 });
 
@@ -582,12 +580,10 @@ db.ref("sensorStatus/dht").on("value", snap => {
 
 db.ref("sensorStatus/soil").on("value", snap => {
 
-  if (!snap.exists()) return;
-
   const ok = snap.val();
 
   document.getElementById("healthSoil").innerText =
-    ok ? "🟢 OK" : "🔴 ERROR";
+    ok === true ? "🟢 OK" : "🔴 ERROR";
 
 });
 
@@ -595,8 +591,6 @@ db.ref("sensorStatus/soil").on("value", snap => {
 /* Fan Relay */
 
 db.ref("sensor/fan").on("value", snap => {
-
-  if (!snap.exists()) return;
 
   const state = snap.val();
 
@@ -610,8 +604,6 @@ db.ref("sensor/fan").on("value", snap => {
 
 db.ref("sensor/pump").on("value", snap => {
 
-  if (!snap.exists()) return;
-
   const state = snap.val();
 
   document.getElementById("healthPump").innerText =
@@ -624,9 +616,9 @@ db.ref("sensor/pump").on("value", snap => {
 
 db.ref("device/wifiRSSI").on("value", snap => {
 
-  if (!snap.exists()) return;
-
   const rssi = snap.val();
+
+  if (rssi == null) return;
 
   let strength = "Weak";
 
@@ -641,6 +633,7 @@ db.ref("device/wifiRSSI").on("value", snap => {
 
 </body>
 </html>
+
 
 
 
