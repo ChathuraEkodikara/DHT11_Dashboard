@@ -202,6 +202,26 @@ WiFi:
 </div>
 
 </div>
+
+<!-- LIGHT SENSOR ROW -->
+
+<div class="row-center">
+
+<div class="card">
+
+<h3>☀ Light Intensity</h3>
+
+<div class="value">
+<span id="light">--</span> lux
+</div>
+
+<div class="sensor-status" id="lightStatus">
+--
+</div>
+
+</div>
+
+</div>  
   
 <!-- CONTROL ROW -->
 
@@ -434,6 +454,37 @@ db.ref("sensor/soil").on("value", snap => {
   }
 
   const el = document.getElementById("soilStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
+});
+
+  /* LIGHT INTENSITY */
+
+db.ref("sensor/light").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const lux = snap.val();
+
+  document.getElementById("light").innerText = lux;
+
+  let text, cls;
+
+  if (lux < 200) {
+    text = "🌙 Very Low";
+    cls = "warning";
+  }
+  else if (lux < 1000) {
+    text = "🌥 Moderate";
+    cls = "normal";
+  }
+  else {
+    text = "☀ Bright";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("lightStatus");
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
