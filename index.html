@@ -363,8 +363,18 @@ OFF:
       WiFi :
       <span id="healthWiFi">--</span>
     </div>
+    
+    <div class="sensor-status">
+    Light Sensor :
+    <span id="healthLight">--</span>
+    </div>
 
-  </div>
+    <div class="sensor-status">
+    Air Sensor :
+    <span id="healthAir">--</span>
+    </div>
+    
+    </div>
 
 </div>
   
@@ -681,6 +691,32 @@ db.ref("sensorStatus/soil").on("value", snap => {
 
   document.getElementById("healthSoil").innerText =
     ok === true ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+  /* Light Sensor Status */
+
+db.ref("sensor/light").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const val = snap.val();
+
+  document.getElementById("healthLight").innerText =
+    (val > 0) ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+  /* Air Sensor Status */
+
+db.ref("sensor/air").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const val = snap.val();
+
+  document.getElementById("healthAir").innerText =
+    (val >= 0) ? "🟢 OK" : "🔴 ERROR";
 
 });
 
