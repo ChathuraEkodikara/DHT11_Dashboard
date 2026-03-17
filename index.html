@@ -1,44 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Agriculture Dashboard</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-
-body{
-font-family:Arial;
-background:#0f172a;
-color:white;
-margin:0;
-padding:20px;
-text-align:center;
+*{
+  box-sizing:border-box;
 }
 
-h1{margin-bottom:10px;}
+body{
+  font-family:Arial, sans-serif;
+  background:#0f172a;
+  color:white;
+  margin:0;
+  padding:0;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:1000;
+  background:#111827;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+}
+
+.topbar-inner{
+  max-width:1400px;
+  margin:0 auto;
+  padding:18px 20px;
+}
+
+.header-title{
+  text-align:center;
+  margin:0;
+  font-size:30px;
+}
 
 .status-box{
-font-size:18px;
-margin-bottom:25px;
+  font-size:18px;
+  margin-top:12px;
+  text-align:center;
 }
 
 .online{color:#22c55e;}
 .offline{color:#ef4444;}
 
 .signal{
-display:inline-flex;
-align-items:flex-end;
-gap:3px;
-margin-left:8px;
+  display:inline-flex;
+  align-items:flex-end;
+  gap:3px;
+  margin-left:8px;
 }
 
 .bar{
-width:6px;
-background:#334155;
-border-radius:2px;
+  width:6px;
+  background:#334155;
+  border-radius:2px;
 }
 
 .bar.active{background:#22c55e;}
@@ -48,37 +71,106 @@ border-radius:2px;
 .bar:nth-child(3){height:14px;}
 .bar:nth-child(4){height:18px;}
 
+.navbar{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:18px;
+}
+
+.nav-btn{
+  background:#1e293b;
+  color:white;
+  border:none;
+  padding:12px 18px;
+  border-radius:12px;
+  cursor:pointer;
+  font-size:15px;
+  transition:0.25s;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+.nav-btn:hover{
+  background:#334155;
+}
+
+.nav-btn.active{
+  background:#3b82f6;
+}
+
+.main-content{
+  max-width:1400px;
+  margin:0 auto;
+  padding:28px 20px 40px;
+}
+
+.section{
+  display:none;
+  animation:fadeIn 0.25s ease;
+}
+
+.section.active{
+  display:block;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(6px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+.section-title{
+  text-align:center;
+  font-size:26px;
+  margin:10px 0 24px;
+}
+
 .row{
-display:flex;
-justify-content:center;
-gap:20px;
-flex-wrap:wrap;
-margin-bottom:30px;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+  margin-bottom:24px;
 }
 
 .row-center{
-display:flex;
-justify-content:center;
-gap:20px;
-flex-wrap:wrap;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
 }
 
 .card{
-background:#1e293b;
-padding:20px;
-border-radius:15px;
-width:280px;
-box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  background:#1e293b;
+  padding:20px;
+  border-radius:16px;
+  width:280px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+}
+
+.card.wide{
+  width:420px;
+}
+
+.card.chart-card{
+  width:420px;
 }
 
 .value{
-font-size:26px;
-margin-top:10px;
+  font-size:26px;
+  margin-top:10px;
+  font-weight:bold;
 }
 
 .sensor-status{
-margin-top:10px;
-font-size:16px;
+  margin-top:10px;
+  font-size:16px;
 }
 
 .normal{color:#22c55e;}
@@ -86,318 +178,543 @@ font-size:16px;
 .danger{color:#ef4444;}
 
 select,input,button{
-padding:6px;
-border-radius:8px;
-border:none;
-font-size:14px;
-margin-top:6px;
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  font-size:14px;
+  margin-top:6px;
 }
 
 input{
-width:70px;
-text-align:center;
+  width:70px;
+  text-align:center;
 }
 
 button{
-cursor:pointer;
-background:#3b82f6;
-color:white;
+  cursor:pointer;
+  background:#3b82f6;
+  color:white;
 }
 
 button:hover{
-background:#2563eb;
+  background:#2563eb;
 }
 
 .switch{
-position:relative;
-display:inline-block;
-width:60px;
-height:34px;
-margin-top:10px;
+  position:relative;
+  display:inline-block;
+  width:60px;
+  height:34px;
+  margin-top:10px;
 }
 
 .switch input{
-opacity:0;
-width:0;
-height:0;
+  opacity:0;
+  width:0;
+  height:0;
 }
 
 .slider{
-position:absolute;
-cursor:pointer;
-background-color:#555;
-transition:.4s;
-border-radius:34px;
-top:0;
-left:0;
-right:0;
-bottom:0;
+  position:absolute;
+  cursor:pointer;
+  background-color:#555;
+  transition:.4s;
+  border-radius:34px;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
 }
 
 .slider:before{
-position:absolute;
-content:"";
-height:26px;
-width:26px;
-left:4px;
-bottom:4px;
-background:white;
-transition:.4s;
-border-radius:50%;
+  position:absolute;
+  content:"";
+  height:26px;
+  width:26px;
+  left:4px;
+  bottom:4px;
+  background:white;
+  transition:.4s;
+  border-radius:50%;
 }
 
 input:checked + .slider{
-background-color:#22c55e;
+  background-color:#22c55e;
 }
 
 input:checked + .slider:before{
-transform:translateX(26px);
+  transform:translateX(26px);
 }
 
 input:disabled + .slider{
-background:#333;
-cursor:not-allowed;
+  background:#333;
+  cursor:not-allowed;
 }
 
+.chart-canvas{
+  width:100%;
+  height:220px;
+  background:#0f172a;
+  border-radius:12px;
+  margin-top:12px;
+  display:block;
+}
+
+.chart-info{
+  margin-top:10px;
+  font-size:14px;
+  color:#cbd5e1;
+}
+
+.health-grid{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:20px;
+}
+
+.health-card{
+  width:420px;
+}
+
+.health-item{
+  margin-top:12px;
+  font-size:16px;
+  text-align:left;
+  padding:10px 12px;
+  background:#0f172a;
+  border-radius:10px;
+}
+
+.footer-note{
+  text-align:center;
+  color:#94a3b8;
+  margin-top:15px;
+  font-size:14px;
+}
+
+@media(max-width:768px){
+  .header-title{
+    font-size:24px;
+  }
+
+  .card,
+  .card.wide,
+  .card.chart-card,
+  .health-card{
+    width:100%;
+  }
+
+  .navbar{
+    gap:8px;
+  }
+
+  .nav-btn{
+    width:calc(50% - 8px);
+  }
+}
 </style>
 </head>
 
 <body>
 
-<h1>🌱 Smart Agriculture Dashboard</h1>
+<div class="topbar">
+  <div class="topbar-inner">
+    <h1 class="header-title">🌱 Smart Agriculture Dashboard</h1>
 
-<div class="status-box">
-Device:
-<span id="deviceStatus">Checking...</span>
-|
-WiFi:
-<span class="signal" id="wifiSignal">
-<div class="bar"></div>
-<div class="bar"></div>
-<div class="bar"></div>
-<div class="bar"></div>
-</span>
-</div>
-
-<!-- SENSOR ROW -->
-
-<div class="row">
-
-<div class="card">
-<h3>🌡 Temperature</h3>
-<div class="value"><span id="temp">--</span> °C</div>
-<div class="sensor-status" id="tempStatus">--</div>
-</div>
-
-<div class="card">
-<h3>💧 Humidity</h3>
-<div class="value"><span id="humidity">--</span> %</div>
-<div class="sensor-status" id="humStatus">--</div>
-</div>
-
-<div class="card">
-<h3>🌾 Soil Moisture</h3>
-<div class="value"><span id="soil">--</span> %</div>
-<div class="sensor-status" id="soilStatus">--</div>
-</div>
-
-</div>
-
-<!-- LIGHT + AIR ROW -->
-
-<div class="row-center">
-
-  <!-- LIGHT CARD -->
-  <div class="card">
-
-    <h3>☀ Light Intensity</h3>
-
-    <div class="value">
-      <span id="light">--</span> lux
+    <div class="status-box">
+      Device:
+      <span id="deviceStatus">Checking...</span>
+      |
+      WiFi:
+      <span class="signal" id="wifiSignal">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </span>
     </div>
 
-    <div class="sensor-status" id="lightStatus">--</div>
-
+    <div class="navbar">
+      <button class="nav-btn active" data-section="conditionsSection">Conditions</button>
+      <button class="nav-btn" data-section="controlSection">Control</button>
+      <button class="nav-btn" data-section="chartsSection">Charts</button>
+      <button class="nav-btn" data-section="healthSection">System Health</button>
+    </div>
   </div>
+</div>
 
-  <!-- AIR QUALITY CARD -->
-  <div class="card">
+<div class="main-content">
 
-    <h3>🌫 Air Quality</h3>
+  <!-- CONDITIONS SECTION -->
+  <section id="conditionsSection" class="section active">
+    <h2 class="section-title">Conditions</h2>
 
-    <div class="value">
-      <span id="air">--</span> %
+    <div class="row">
+      <div class="card">
+        <h3>🌡 Temperature</h3>
+        <div class="value"><span id="temp">--</span> °C</div>
+        <div class="sensor-status" id="tempStatus">--</div>
+      </div>
+
+      <div class="card">
+        <h3>💧 Humidity</h3>
+        <div class="value"><span id="humidity">--</span> %</div>
+        <div class="sensor-status" id="humStatus">--</div>
+      </div>
+
+      <div class="card">
+        <h3>🌾 Soil Moisture</h3>
+        <div class="value"><span id="soil">--</span> %</div>
+        <div class="sensor-status" id="soilStatus">--</div>
+      </div>
     </div>
 
-    <div class="sensor-status" id="airStatus">--</div>
+    <div class="row-center">
+      <div class="card">
+        <h3>☀ Light Intensity</h3>
+        <div class="value"><span id="light">--</span> lux</div>
+        <div class="sensor-status" id="lightStatus">--</div>
+      </div>
 
-  </div>
+      <div class="card">
+        <h3>🌫 Air Quality</h3>
+        <div class="value"><span id="air">--</span> %</div>
+        <div class="sensor-status" id="airStatus">--</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTROL SECTION -->
+  <section id="controlSection" class="section">
+    <h2 class="section-title">Control</h2>
+
+    <div class="row-center">
+
+      <div class="card wide">
+        <h3>🌬 Fan Control</h3>
+
+        <label>Mode:</label><br>
+        <select id="modeSelect">
+          <option value="AUTO">Automatic</option>
+          <option value="MANUAL">Manual</option>
+        </select>
+
+        <br>
+
+        <label class="switch">
+          <input type="checkbox" id="fanSwitch">
+          <span class="slider"></span>
+        </label>
+
+        <div class="value" id="fanStatus">--</div>
+
+        <br>
+        <strong>Temperature Thresholds</strong><br>
+
+        ON:
+        <input type="number" id="tempOnInput">
+
+        OFF:
+        <input type="number" id="tempOffInput">
+
+        <br><br>
+
+        <strong>Humidity Thresholds</strong><br>
+
+        ON:
+        <input type="number" id="humOnInput">
+
+        OFF:
+        <input type="number" id="humOffInput">
+
+        <br><br>
+
+        <button id="saveThresholds">Save Thresholds</button>
+      </div>
+
+      <div class="card wide">
+        <h3>🚿 Pump Control</h3>
+
+        <label>Mode:</label><br>
+        <select id="pumpModeSelect">
+          <option value="AUTO">Automatic</option>
+          <option value="MANUAL">Manual</option>
+        </select>
+
+        <br>
+
+        <label class="switch">
+          <input type="checkbox" id="pumpSwitch">
+          <span class="slider"></span>
+        </label>
+
+        <div class="value" id="pumpStatus">--</div>
+
+        <br>
+        <strong>Soil Moisture Thresholds</strong><br>
+
+        ON:
+        <input type="number" id="soilOnInput">
+
+        OFF:
+        <input type="number" id="soilOffInput">
+
+        <br><br>
+
+        <button id="saveSoilThresholds">Save Thresholds</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CHARTS SECTION -->
+  <section id="chartsSection" class="section">
+    <h2 class="section-title">Charts</h2>
+
+    <div class="row">
+      <div class="card chart-card">
+        <h3>🌡 Temperature History</h3>
+        <canvas id="tempChart" class="chart-canvas" width="380" height="220"></canvas>
+        <div class="chart-info">Live historical view of temperature values.</div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>💧 Humidity History</h3>
+        <canvas id="humChart" class="chart-canvas" width="380" height="220"></canvas>
+        <div class="chart-info">Live historical view of humidity values.</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card chart-card">
+        <h3>🌾 Soil Moisture History</h3>
+        <canvas id="soilChart" class="chart-canvas" width="380" height="220"></canvas>
+        <div class="chart-info">Live historical view of soil moisture values.</div>
+      </div>
+
+      <div class="card chart-card">
+        <h3>☀ Light Intensity History</h3>
+        <canvas id="lightChart" class="chart-canvas" width="380" height="220"></canvas>
+        <div class="chart-info">Live historical view of light intensity values.</div>
+      </div>
+    </div>
+
+    <div class="row-center">
+      <div class="card chart-card">
+        <h3>🌫 Air Quality History</h3>
+        <canvas id="airChart" class="chart-canvas" width="380" height="220"></canvas>
+        <div class="chart-info">Live historical view of air quality values.</div>
+      </div>
+    </div>
+
+    <div class="footer-note">Charts are ready and update live as new sensor values arrive.</div>
+  </section>
+
+  <!-- SYSTEM HEALTH SECTION -->
+  <section id="healthSection" class="section">
+    <h2 class="section-title">System Health</h2>
+
+    <div class="health-grid">
+      <div class="card health-card">
+        <h3>🩺 Sensor Health</h3>
+
+        <div class="health-item">DHT Sensor : <span id="healthDHT">--</span></div>
+        <div class="health-item">Soil Sensor : <span id="healthSoil">--</span></div>
+        <div class="health-item">Light Sensor : <span id="healthLight">--</span></div>
+        <div class="health-item">Air Sensor : <span id="healthAir">--</span></div>
+      </div>
+
+      <div class="card health-card">
+        <h3>⚙ Device Health</h3>
+
+        <div class="health-item">Fan Relay : <span id="healthFan">--</span></div>
+        <div class="health-item">Pump Relay : <span id="healthPump">--</span></div>
+        <div class="health-item">WiFi : <span id="healthWiFi">--</span></div>
+      </div>
+    </div>
+  </section>
 
 </div>
 
-  <br><br>
-  
-<!-- CONTROL ROW -->
-
-<div class="row-center">
-  
-<!-- FAN CARD -->
-
-<div class="card">
-
-<h3>🌬 Fan Control</h3>
-
-<label>Mode:</label><br>
-
-<select id="modeSelect">
-<option value="AUTO">Automatic</option>
-<option value="MANUAL">Manual</option>
-</select>
-
-<br>
-
-<label class="switch">
-<input type="checkbox" id="fanSwitch">
-<span class="slider"></span>
-</label>
-
-<div class="value" id="fanStatus">--</div>
-
-<br>
-
-<strong>Temperature Thresholds</strong><br>
-
-ON:
-<input type="number" id="tempOnInput">
-
-OFF:
-<input type="number" id="tempOffInput">
-
-<br><br>
-
-<strong>Humidity Thresholds</strong><br>
-
-ON:
-<input type="number" id="humOnInput">
-
-OFF:
-<input type="number" id="humOffInput">
-
-<br><br>
-
-<button id="saveThresholds">Save Thresholds</button>
-
-</div>
-
-
-<!-- PUMP CARD -->
-
-<div class="card">
-
-<h3>🚿 Pump Control</h3>
-
-<label>Mode:</label><br>
-
-<select id="pumpModeSelect">
-<option value="AUTO">Automatic</option>
-<option value="MANUAL">Manual</option>
-</select>
-
-<br>
-
-<label class="switch">
-<input type="checkbox" id="pumpSwitch">
-<span class="slider"></span>
-</label>
-
-<div class="value" id="pumpStatus">--</div>
-
-<br>
-
-<strong>Soil Moisture Thresholds</strong><br>
-
-ON:
-<input type="number" id="soilOnInput">
-
-OFF:
-<input type="number" id="soilOffInput">
-
-<br><br>
-
-<button id="saveSoilThresholds">Save Thresholds</button>
-
-</div>
-
-</div>
-
- <!-- THIRD ROW : SYSTEM HEALTH -->
-<br>
-  <br>
-<div class="row-center">
-
-  <div class="card">
-
-    <h3>🩺 System Health</h3>
-
-    <div class="sensor-status">
-      DHT Sensor :
-      <span id="healthDHT">--</span>
-    </div>
-
-    <div class="sensor-status">
-      Soil Sensor :
-      <span id="healthSoil">--</span>
-    </div>
-
-    <div class="sensor-status">
-      Fan Relay :
-      <span id="healthFan">--</span>
-    </div>
-
-    <div class="sensor-status">
-      Pump Relay :
-      <span id="healthPump">--</span>
-    </div>
-
-    <div class="sensor-status">
-      WiFi :
-      <span id="healthWiFi">--</span>
-    </div>
-    
-    <div class="sensor-status">
-    Light Sensor :
-    <span id="healthLight">--</span>
-    </div>
-
-    <div class="sensor-status">
-    Air Sensor :
-    <span id="healthAir">--</span>
-    </div>
-    
-    </div>
-
-</div>
-  
 <script>
-
 /* Firebase Init */
 
 firebase.initializeApp({
-apiKey:"AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
-databaseURL:"https://test-project-f4a2b-default-rtdb.firebaseio.com"
+  apiKey:"AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
+  databaseURL:"https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
-const db=firebase.database();
+const db = firebase.database();
 
-/* SENSOR DATA */
+/* DOM ELEMENTS */
 
-/* -------- SENSOR LISTENERS -------- */
+const modeSelect = document.getElementById("modeSelect");
+const pumpModeSelect = document.getElementById("pumpModeSelect");
+const fanSwitch = document.getElementById("fanSwitch");
+const pumpSwitch = document.getElementById("pumpSwitch");
+const fanStatusEl = document.getElementById("fanStatus");
+const pumpStatusEl = document.getElementById("pumpStatus");
+
+const tempOnInput = document.getElementById("tempOnInput");
+const tempOffInput = document.getElementById("tempOffInput");
+const humOnInput = document.getElementById("humOnInput");
+const humOffInput = document.getElementById("humOffInput");
+const soilOnInput = document.getElementById("soilOnInput");
+const soilOffInput = document.getElementById("soilOffInput");
+
+const saveThresholdsBtn = document.getElementById("saveThresholds");
+const saveSoilThresholdsBtn = document.getElementById("saveSoilThresholds");
+
+/* SECTION SWITCHING */
+
+const navButtons = document.querySelectorAll(".nav-btn");
+const sections = document.querySelectorAll(".section");
+
+navButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    const targetId = button.getAttribute("data-section");
+
+    navButtons.forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+
+    sections.forEach(section => {
+      section.classList.remove("active");
+    });
+
+    document.getElementById(targetId).classList.add("active");
+  });
+});
+
+/* SIMPLE LIVE CHARTS */
+
+const MAX_POINTS = 20;
+
+const chartData = {
+  temp: [],
+  hum: [],
+  soil: [],
+  light: [],
+  air: []
+};
+
+function pushChartData(key, value){
+  if (typeof value !== "number" || isNaN(value)) return;
+  chartData[key].push(value);
+  if (chartData[key].length > MAX_POINTS){
+    chartData[key].shift();
+  }
+}
+
+function drawLineChart(canvasId, data, label){
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+
+  ctx.clearRect(0, 0, width, height);
+
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+
+  for(let i = 0; i < 5; i++){
+    const y = 20 + i * ((height - 40) / 4);
+    ctx.beginPath();
+    ctx.moveTo(40, y);
+    ctx.lineTo(width - 15, y);
+    ctx.stroke();
+  }
+
+  if (data.length === 0){
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "14px Arial";
+    ctx.fillText("Waiting for live data...", 115, 110);
+    return;
+  }
+
+  const minVal = Math.min(...data);
+  const maxVal = Math.max(...data);
+  const range = (maxVal - minVal) || 1;
+
+  ctx.strokeStyle = "#3b82f6";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  data.forEach((value, index) => {
+    const x = 40 + (index * (width - 60) / Math.max(data.length - 1, 1));
+    const y = height - 20 - ((value - minVal) / range) * (height - 40);
+
+    if(index === 0){
+      ctx.moveTo(x, y);
+    }else{
+      ctx.lineTo(x, y);
+    }
+  });
+
+  ctx.stroke();
+
+  ctx.fillStyle = "#ffffff";
+  data.forEach((value, index) => {
+    const x = 40 + (index * (width - 60) / Math.max(data.length - 1, 1));
+    const y = height - 20 - ((value - minVal) / range) * (height - 40);
+
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "12px Arial";
+  ctx.fillText("Min: " + minVal.toFixed(1), 10, height - 8);
+  ctx.fillText("Max: " + maxVal.toFixed(1), width - 80, height - 8);
+  ctx.fillText(label, 10, 15);
+}
+
+function refreshCharts(){
+  drawLineChart("tempChart", chartData.temp, "Temperature");
+  drawLineChart("humChart", chartData.hum, "Humidity");
+  drawLineChart("soilChart", chartData.soil, "Soil Moisture");
+  drawLineChart("lightChart", chartData.light, "Light Intensity");
+  drawLineChart("airChart", chartData.air, "Air Quality");
+}
+
+/* THRESHOLD LOADERS */
+
+db.ref("control/tempOn").on("value", s => {
+  if (s.exists()) tempOnInput.value = s.val();
+});
+
+db.ref("control/tempOff").on("value", s => {
+  if (s.exists()) tempOffInput.value = s.val();
+});
+
+db.ref("control/humOn").on("value", s => {
+  if (s.exists()) humOnInput.value = s.val();
+});
+
+db.ref("control/humOff").on("value", s => {
+  if (s.exists()) humOffInput.value = s.val();
+});
+
+db.ref("control/soilOn").on("value", s => {
+  if (s.exists()) soilOnInput.value = s.val();
+});
+
+db.ref("control/soilOff").on("value", s => {
+  if (s.exists()) soilOffInput.value = s.val();
+});
+
+/* SENSOR LISTENERS */
 
 db.ref("sensor/temperature").on("value", snap => {
-
   if (!snap.exists()) return;
 
-  const temp = snap.val();
+  const temp = Number(snap.val());
 
   document.getElementById("temp").innerText = temp.toFixed(1);
 
@@ -420,14 +737,14 @@ db.ref("sensor/temperature").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
+  pushChartData("temp", temp);
+  refreshCharts();
 });
 
-
 db.ref("sensor/humidity").on("value", snap => {
-
   if (!snap.exists()) return;
 
-  const hum = snap.val();
+  const hum = Number(snap.val());
 
   document.getElementById("humidity").innerText = hum;
 
@@ -450,15 +767,14 @@ db.ref("sensor/humidity").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
+  pushChartData("hum", hum);
+  refreshCharts();
 });
-  
-
 
 db.ref("sensor/soil").on("value", snap => {
-
   if (!snap.exists()) return;
 
-  const soil = snap.val();
+  const soil = Number(snap.val());
 
   document.getElementById("soil").innerText = soil;
 
@@ -481,15 +797,14 @@ db.ref("sensor/soil").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
+  pushChartData("soil", soil);
+  refreshCharts();
 });
 
-  /* LIGHT INTENSITY */
-
 db.ref("sensor/light").on("value", snap => {
-
   if (!snap.exists()) return;
 
-  const lux = snap.val();
+  const lux = Number(snap.val());
 
   document.getElementById("light").innerText = lux;
 
@@ -512,36 +827,17 @@ db.ref("sensor/light").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
+  document.getElementById("healthLight").innerText =
+    (lux > 0) ? "🟢 OK" : "🔴 ERROR";
+
+  pushChartData("light", lux);
+  refreshCharts();
 });
-/* FAN STATUS */
-
-const fanSwitch=document.getElementById("fanSwitch");
-
-db.ref("sensor/fan").on("value",s=>{
-if(!s.exists())return;
-let st=s.val();
-fanSwitch.checked=st;
-fanStatus.innerText=st?"🟢 ON":"🔴 OFF";
-});
-
-/* PUMP STATUS */
-
-const pumpSwitch=document.getElementById("pumpSwitch");
-
-db.ref("sensor/pump").on("value",s=>{
-if(!s.exists())return;
-let st=s.val();
-pumpSwitch.checked=st;
-pumpStatus.innerText=st?"🟢 ON":"🔴 OFF";
-});
-
-/* AIR QUALITY */
 
 db.ref("sensor/air").on("value", snap => {
-
   if (!snap.exists()) return;
 
-  const air = snap.val();
+  const air = Number(snap.val());
 
   document.getElementById("air").innerText = air;
 
@@ -564,67 +860,94 @@ db.ref("sensor/air").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-});  
+  document.getElementById("healthAir").innerText =
+    (air >= 0) ? "🟢 OK" : "🔴 ERROR";
+
+  pushChartData("air", air);
+  refreshCharts();
+});
+
+/* FAN STATUS */
+
+db.ref("sensor/fan").on("value", s => {
+  if (!s.exists()) return;
+  const st = s.val();
+  fanSwitch.checked = st;
+  fanStatusEl.innerText = st ? "🟢 ON" : "🔴 OFF";
+  document.getElementById("healthFan").innerText = st ? "🟢 ACTIVE" : "⚪ IDLE";
+});
+
+/* PUMP STATUS */
+
+db.ref("sensor/pump").on("value", s => {
+  if (!s.exists()) return;
+  const st = s.val();
+  pumpSwitch.checked = st;
+  pumpStatusEl.innerText = st ? "🟢 ON" : "🔴 OFF";
+  document.getElementById("healthPump").innerText = st ? "🟢 ACTIVE" : "⚪ IDLE";
+});
 
 /* FAN MODE */
 
-const modeRef=db.ref("control/mode");
-const fanManual=db.ref("control/fanManual");
+const modeRef = db.ref("control/mode");
+const fanManual = db.ref("control/fanManual");
 
-modeRef.on("value",s=>{
-let mode=s.val();
-modeSelect.value=mode;
-fanSwitch.disabled=(mode==="AUTO");
+modeRef.on("value", s => {
+  const mode = s.val();
+  modeSelect.value = mode;
+  fanSwitch.disabled = (mode === "AUTO");
 });
 
-modeSelect.addEventListener("change",e=>{
-modeRef.set(e.target.value);
+modeSelect.addEventListener("change", e => {
+  modeRef.set(e.target.value);
 });
 
-fanSwitch.addEventListener("change",()=>{
-if(!fanSwitch.disabled)
-fanManual.set(fanSwitch.checked);
+fanSwitch.addEventListener("change", () => {
+  if (!fanSwitch.disabled){
+    fanManual.set(fanSwitch.checked);
+  }
 });
 
 /* PUMP MODE */
 
-const pumpModeRef=db.ref("control/pumpMode");
-const pumpManual=db.ref("control/pumpManual");
+const pumpModeRef = db.ref("control/pumpMode");
+const pumpManual = db.ref("control/pumpManual");
 
-pumpModeRef.on("value",s=>{
-let mode=s.val();
-pumpModeSelect.value=mode;
-pumpSwitch.disabled=(mode==="AUTO");
+pumpModeRef.on("value", s => {
+  const mode = s.val();
+  pumpModeSelect.value = mode;
+  pumpSwitch.disabled = (mode === "AUTO");
 });
 
-pumpModeSelect.addEventListener("change",e=>{
-pumpModeRef.set(e.target.value);
+pumpModeSelect.addEventListener("change", e => {
+  pumpModeRef.set(e.target.value);
 });
 
-pumpSwitch.addEventListener("change",()=>{
-if(!pumpSwitch.disabled)
-pumpManual.set(pumpSwitch.checked);
+pumpSwitch.addEventListener("change", () => {
+  if (!pumpSwitch.disabled){
+    pumpManual.set(pumpSwitch.checked);
+  }
 });
 
 /* FAN THRESHOLDS */
 
-saveThresholds.onclick=()=>{
-db.ref("control/tempOn").set(parseFloat(tempOnInput.value));
-db.ref("control/tempOff").set(parseFloat(tempOffInput.value));
-db.ref("control/humOn").set(parseFloat(humOnInput.value));
-db.ref("control/humOff").set(parseFloat(humOffInput.value));
-alert("Thresholds Updated");
+saveThresholdsBtn.onclick = () => {
+  db.ref("control/tempOn").set(parseFloat(tempOnInput.value));
+  db.ref("control/tempOff").set(parseFloat(tempOffInput.value));
+  db.ref("control/humOn").set(parseFloat(humOnInput.value));
+  db.ref("control/humOff").set(parseFloat(humOffInput.value));
+  alert("Thresholds Updated");
 };
 
 /* SOIL THRESHOLDS */
 
-saveSoilThresholds.onclick=()=>{
-db.ref("control/soilOn").set(parseInt(soilOnInput.value));
-db.ref("control/soilOff").set(parseInt(soilOffInput.value));
-alert("Soil Settings Saved");
+saveSoilThresholdsBtn.onclick = () => {
+  db.ref("control/soilOn").set(parseInt(soilOnInput.value));
+  db.ref("control/soilOff").set(parseInt(soilOffInput.value));
+  alert("Soil Settings Saved");
 };
 
-  /* -------- DEVICE STATUS -------- */
+/* DEVICE STATUS */
 
 let lastSeen = 0;
 let rssi = null;
@@ -638,14 +961,12 @@ db.ref("device/wifiRSSI").on("value", s => {
 });
 
 setInterval(() => {
-
   const statusEl = document.getElementById("deviceStatus");
   const bars = document.querySelectorAll("#wifiSignal .bar");
 
   if (!lastSeen) return;
 
   if (Date.now() - lastSeen < 20000) {
-
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
 
@@ -656,112 +977,45 @@ setInterval(() => {
     else if (rssi > -75) level = 2;
     else if (rssi > -85) level = 1;
 
-    bars.forEach((b,i)=> b.classList.toggle("active", i < level));
-
+    bars.forEach((b, i) => b.classList.toggle("active", i < level));
   }
   else {
-
     statusEl.innerText = "🔴 OFFLINE";
     statusEl.className = "offline";
 
     bars.forEach(b => b.classList.remove("active"));
   }
-
 }, 2000);
 
- /* -------- SYSTEM HEALTH -------- */
-
-/* DHT Sensor */
+/* SYSTEM HEALTH */
 
 db.ref("sensorStatus/dht").on("value", snap => {
-
   const ok = snap.val();
-
   document.getElementById("healthDHT").innerText =
     ok === true ? "🟢 OK" : "🔴 ERROR";
-
 });
-
-
-/* Soil Sensor */
 
 db.ref("sensorStatus/soil").on("value", snap => {
-
   const ok = snap.val();
-
   document.getElementById("healthSoil").innerText =
     ok === true ? "🟢 OK" : "🔴 ERROR";
-
 });
-
-  /* Light Sensor Status */
-
-db.ref("sensor/light").on("value", snap => {
-
-  if (!snap.exists()) return;
-
-  const val = snap.val();
-
-  document.getElementById("healthLight").innerText =
-    (val > 0) ? "🟢 OK" : "🔴 ERROR";
-
-});
-
-  /* Air Sensor Status */
-
-db.ref("sensor/air").on("value", snap => {
-
-  if (!snap.exists()) return;
-
-  const val = snap.val();
-
-  document.getElementById("healthAir").innerText =
-    (val >= 0) ? "🟢 OK" : "🔴 ERROR";
-
-});
-
-
-/* Fan Relay */
-
-db.ref("sensor/fan").on("value", snap => {
-
-  const state = snap.val();
-
-  document.getElementById("healthFan").innerText =
-    state ? "🟢 ACTIVE" : "⚪ IDLE";
-
-});
-
-
-/* Pump Relay */
-
-db.ref("sensor/pump").on("value", snap => {
-
-  const state = snap.val();
-
-  document.getElementById("healthPump").innerText =
-    state ? "🟢 ACTIVE" : "⚪ IDLE";
-
-});
-
-
-/* WiFi Health */
 
 db.ref("device/wifiRSSI").on("value", snap => {
-
-  const rssi = snap.val();
-
-  if (rssi == null) return;
+  const wifiRssi = snap.val();
+  if (wifiRssi == null) return;
 
   let strength = "Weak";
 
-  if (rssi > -60) strength = "Strong";
-  else if (rssi > -75) strength = "Medium";
+  if (wifiRssi > -60) strength = "Strong";
+  else if (wifiRssi > -75) strength = "Medium";
 
-  document.getElementById("healthWiFi").innerText =
-    "🟢 " + strength;
-
+  document.getElementById("healthWiFi").innerText = "🟢 " + strength;
 });
+
+/* INITIAL CHART DRAW */
+
+refreshCharts();
 </script>
 
 </body>
