@@ -203,25 +203,25 @@ WiFi:
 
 </div>
 
-  
-<!-- LIGHT + AIR ROW -->
+<!-- LIGHT SENSOR ROW -->
 
 <div class="row-center">
 
-  <!-- LIGHT CARD -->
-  <div class="card">
+<div class="card">
 
-    <h3>☀ Light Intensity</h3>
+<h3>☀ Light Intensity</h3>
 
-    <div class="value">
-      <span id="light">--</span> lux
-    </div>
+<div class="value">
+<span id="light">--</span> lux
+</div>
 
-    <div class="sensor-status" id="lightStatus">--</div>
+<div class="sensor-status" id="lightStatus">
+--
+</div>
 
-  </div>
+</div>
 
-  <!-- AIR QUALITY CARD -->
+ <!-- AIR QUALITY CARD -->
   <div class="card">
 
     <h3>🌫 Air Quality</h3>
@@ -231,10 +231,13 @@ WiFi:
     </div>
 
     <div class="sensor-status" id="airStatus">--</div>
+</div>  
 
-  </div>
+  <br><br>
+  
+<!-- CONTROL ROW -->
 
-</div>
+<div class="row-center">
   
 <!-- FAN CARD -->
 
@@ -694,12 +697,3 @@ db.ref("device/wifiRSSI").on("value", snap => {
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
