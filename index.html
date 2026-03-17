@@ -525,6 +525,37 @@ pumpSwitch.checked=st;
 pumpStatus.innerText=st?"🟢 ON":"🔴 OFF";
 });
 
+/* AIR QUALITY */
+
+db.ref("sensor/air").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const air = snap.val();
+
+  document.getElementById("air").innerText = air;
+
+  let text, cls;
+
+  if (air >= 70) {
+    text = "🟢 Good";
+    cls = "normal";
+  }
+  else if (air >= 40) {
+    text = "⚠ Moderate";
+    cls = "warning";
+  }
+  else {
+    text = "🔴 Poor";
+    cls = "danger";
+  }
+
+  const el = document.getElementById("airStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
+});  
+
 /* FAN MODE */
 
 const modeRef=db.ref("control/mode");
