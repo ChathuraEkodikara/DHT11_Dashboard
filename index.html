@@ -18,11 +18,11 @@ padding:20px;
 text-align:center;
 }
 
-h1{margin-bottom:20px;}
+h1{margin-bottom:10px;}
 
 .status-box{
 font-size:18px;
-margin-bottom:30px;
+margin-bottom:25px;
 }
 
 .online{color:#22c55e;}
@@ -40,7 +40,9 @@ width:6px;
 background:#334155;
 border-radius:2px;
 }
+
 .bar.active{background:#22c55e;}
+
 .bar:nth-child(1){height:6px;}
 .bar:nth-child(2){height:10px;}
 .bar:nth-child(3){height:14px;}
@@ -49,9 +51,16 @@ border-radius:2px;
 .row{
 display:flex;
 justify-content:center;
-gap:25px;
+gap:20px;
 flex-wrap:wrap;
-margin-bottom:35px;
+margin-bottom:30px;
+}
+
+.row-center{
+display:flex;
+justify-content:center;
+gap:20px;
+flex-wrap:wrap;
 }
 
 .card{
@@ -59,11 +68,7 @@ background:#1e293b;
 padding:20px;
 border-radius:15px;
 width:280px;
-min-height:260px;
 box-shadow:0 4px 20px rgba(0,0,0,0.4);
-display:flex;
-flex-direction:column;
-justify-content:space-between;
 }
 
 .value{
@@ -99,7 +104,9 @@ background:#3b82f6;
 color:white;
 }
 
-button:hover{background:#2563eb;}
+button:hover{
+background:#2563eb;
+}
 
 .switch{
 position:relative;
@@ -109,7 +116,11 @@ height:34px;
 margin-top:10px;
 }
 
-.switch input{opacity:0;width:0;height:0;}
+.switch input{
+opacity:0;
+width:0;
+height:0;
+}
 
 .slider{
 position:absolute;
@@ -117,27 +128,35 @@ cursor:pointer;
 background-color:#555;
 transition:.4s;
 border-radius:34px;
-top:0;left:0;right:0;bottom:0;
+top:0;
+left:0;
+right:0;
+bottom:0;
 }
 
 .slider:before{
 position:absolute;
 content:"";
-height:26px;width:26px;
-left:4px;bottom:4px;
+height:26px;
+width:26px;
+left:4px;
+bottom:4px;
 background:white;
 transition:.4s;
 border-radius:50%;
 }
 
-input:checked + .slider{background:#22c55e;}
-input:checked + .slider:before{transform:translateX(26px);}
-input:disabled + .slider{background:#333;cursor:not-allowed;}
+input:checked + .slider{
+background-color:#22c55e;
+}
 
-.section-title{
-margin:20px 0 10px;
-font-size:18px;
-opacity:0.8;
+input:checked + .slider:before{
+transform:translateX(26px);
+}
+
+input:disabled + .slider{
+background:#333;
+cursor:not-allowed;
 }
 
 </style>
@@ -148,7 +167,9 @@ opacity:0.8;
 <h1>🌱 Smart Agriculture Dashboard</h1>
 
 <div class="status-box">
-Device: <span id="deviceStatus">Checking...</span> |
+Device:
+<span id="deviceStatus">Checking...</span>
+|
 WiFi:
 <span class="signal" id="wifiSignal">
 <div class="bar"></div>
@@ -159,6 +180,7 @@ WiFi:
 </div>
 
 <!-- SENSOR ROW -->
+
 <div class="row">
 
 <div class="card">
@@ -181,36 +203,58 @@ WiFi:
 
 </div>
 
-<!-- LIGHT + AIR -->
-<div class="row">
+<!-- LIGHT + AIR ROW -->
 
-<div class="card">
-<h3>☀ Light Intensity</h3>
-<div class="value"><span id="light">--</span> lux</div>
-<div class="sensor-status" id="lightStatus">--</div>
+<div class="row-center">
+
+  <!-- LIGHT CARD -->
+  <div class="card">
+
+    <h3>☀ Light Intensity</h3>
+
+    <div class="value">
+      <span id="light">--</span> lux
+    </div>
+
+    <div class="sensor-status" id="lightStatus">--</div>
+
+  </div>
+
+  <!-- AIR QUALITY CARD -->
+  <div class="card">
+
+    <h3>🌫 Air Quality</h3>
+
+    <div class="value">
+      <span id="air">--</span> %
+    </div>
+
+    <div class="sensor-status" id="airStatus">--</div>
+
+  </div>
+
 </div>
 
-<div class="card">
-<h3>🌫 Air Quality</h3>
-<div class="value"><span id="air">--</span> %</div>
-<div class="sensor-status" id="airStatus">--</div>
-</div>
+  <br><br>
+  
+<!-- CONTROL ROW -->
 
-</div>
-
-<!-- CONTROL -->
-<div class="section-title">Control</div>
-
-<div class="row">
+<div class="row-center">
+  
+<!-- FAN CARD -->
 
 <div class="card">
 
-<h3>🌬 Fan</h3>
+<h3>🌬 Fan Control</h3>
+
+<label>Mode:</label><br>
 
 <select id="modeSelect">
 <option value="AUTO">Automatic</option>
 <option value="MANUAL">Manual</option>
 </select>
+
+<br>
 
 <label class="switch">
 <input type="checkbox" id="fanSwitch">
@@ -219,26 +263,47 @@ WiFi:
 
 <div class="value" id="fanStatus">--</div>
 
-<div>
-Temp ON <input id="tempOnInput">
-OFF <input id="tempOffInput"><br>
+<br>
 
-Hum ON <input id="humOnInput">
-OFF <input id="humOffInput"><br>
+<strong>Temperature Thresholds</strong><br>
 
-<button id="saveThresholds">Save</button>
+ON:
+<input type="number" id="tempOnInput">
+
+OFF:
+<input type="number" id="tempOffInput">
+
+<br><br>
+
+<strong>Humidity Thresholds</strong><br>
+
+ON:
+<input type="number" id="humOnInput">
+
+OFF:
+<input type="number" id="humOffInput">
+
+<br><br>
+
+<button id="saveThresholds">Save Thresholds</button>
+
 </div>
 
-</div>
+
+<!-- PUMP CARD -->
 
 <div class="card">
 
-<h3>🚿 Pump</h3>
+<h3>🚿 Pump Control</h3>
+
+<label>Mode:</label><br>
 
 <select id="pumpModeSelect">
 <option value="AUTO">Automatic</option>
 <option value="MANUAL">Manual</option>
 </select>
+
+<br>
 
 <label class="switch">
 <input type="checkbox" id="pumpSwitch">
@@ -247,161 +312,456 @@ OFF <input id="humOffInput"><br>
 
 <div class="value" id="pumpStatus">--</div>
 
-<div>
-Soil ON <input id="soilOnInput">
-OFF <input id="soilOffInput"><br>
+<br>
 
-<button id="saveSoilThresholds">Save</button>
-</div>
+<strong>Soil Moisture Thresholds</strong><br>
 
-</div>
+ON:
+<input type="number" id="soilOnInput">
 
-</div>
+OFF:
+<input type="number" id="soilOffInput">
 
-<!-- HEALTH -->
-<div class="section-title">System Health</div>
+<br><br>
 
-<div class="row">
-
-<div class="card">
-
-<h3>🩺 Status</h3>
-
-<div class="sensor-status">DHT: <span id="healthDHT">--</span></div>
-<div class="sensor-status">Soil: <span id="healthSoil">--</span></div>
-<div class="sensor-status">Light: <span id="healthLight">--</span></div>
-<div class="sensor-status">Air: <span id="healthAir">--</span></div>
-
-<div class="sensor-status">Fan: <span id="healthFan">--</span></div>
-<div class="sensor-status">Pump: <span id="healthPump">--</span></div>
-
-<div class="sensor-status">WiFi: <span id="healthWiFi">--</span></div>
+<button id="saveSoilThresholds">Save Thresholds</button>
 
 </div>
 
 </div>
 
+ <!-- THIRD ROW : SYSTEM HEALTH -->
+<br>
+  <br>
+<div class="row-center">
+
+  <div class="card">
+
+    <h3>🩺 System Health</h3>
+
+    <div class="sensor-status">
+      DHT Sensor :
+      <span id="healthDHT">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Soil Sensor :
+      <span id="healthSoil">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Fan Relay :
+      <span id="healthFan">--</span>
+    </div>
+
+    <div class="sensor-status">
+      Pump Relay :
+      <span id="healthPump">--</span>
+    </div>
+
+    <div class="sensor-status">
+      WiFi :
+      <span id="healthWiFi">--</span>
+    </div>
+    
+    <div class="sensor-status">
+    Light Sensor :
+    <span id="healthLight">--</span>
+    </div>
+
+    <div class="sensor-status">
+    Air Sensor :
+    <span id="healthAir">--</span>
+    </div>
+    
+    </div>
+
+</div>
+  
 <script>
 
-/* Firebase */
+/* Firebase Init */
+
 firebase.initializeApp({
-apiKey:"AIzaSy...",
+apiKey:"AIzaSyAEAGpHaCg0uUIyrsa165zY5xECBn0JpuY",
 databaseURL:"https://test-project-f4a2b-default-rtdb.firebaseio.com"
 });
 
-const db = firebase.database();
+const db=firebase.database();
 
-/* Elements */
-const fanSwitch = fanSwitch = document.getElementById("fanSwitch");
-const pumpSwitch = document.getElementById("pumpSwitch");
+/* SENSOR DATA */
 
-/* SENSOR */
-db.ref("sensor").on("value",snap=>{
-if(!snap.exists()) return;
-let d=snap.val();
+/* -------- SENSOR LISTENERS -------- */
 
-/* values */
-temp.innerText=d.temperature?.toFixed(1);
-humidity.innerText=d.humidity;
-soil.innerText=d.soil;
-light.innerText=d.light;
-air.innerText=d.air;
+db.ref("sensor/temperature").on("value", snap => {
 
-/* statuses */
-tempStatus.innerText = d.temperature>35?"🔴 Hot":"🟢 Normal";
-humStatus.innerText = d.humidity>80?"💧 High":"🟢 Normal";
-soilStatus.innerText = d.soil<30?"🚨 Dry":"🟢 OK";
+  if (!snap.exists()) return;
 
-lightStatus.innerText = d.light<200?"🌙 Low":"☀ Good";
-airStatus.innerText = d.air<40?"🔴 Poor":"🟢 Good";
+  const temp = snap.val();
 
-/* fan/pump */
-fanSwitch.checked=d.fan;
-fanStatus.innerText=d.fan?"🟢 ON":"🔴 OFF";
+  document.getElementById("temp").innerText = temp.toFixed(1);
 
-pumpSwitch.checked=d.pump;
-pumpStatus.innerText=d.pump?"🟢 ON":"🔴 OFF";
+  let text, cls;
 
-/* health */
-healthLight.innerText="🟢";
-healthAir.innerText="🟢";
-healthFan.innerText=d.fan?"🟢":"⚪";
-healthPump.innerText=d.pump?"🟢":"⚪";
+  if (temp < 15) {
+    text = "🔵 Too Cold";
+    cls = "warning";
+  }
+  else if (temp > 35) {
+    text = "🔴 Too Hot";
+    cls = "danger";
+  }
+  else {
+    text = "🟢 Normal";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("tempStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 
 });
 
-/* CONTROL */
-db.ref("control").on("value",snap=>{
-if(!snap.exists()) return;
-let c=snap.val();
 
-modeSelect.value=c.mode;
-fanSwitch.disabled=c.mode==="AUTO";
+db.ref("sensor/humidity").on("value", snap => {
 
-pumpModeSelect.value=c.pumpMode;
-pumpSwitch.disabled=c.pumpMode==="AUTO";
+  if (!snap.exists()) return;
 
-/* thresholds */
-tempOnInput.value=c.tempOn;
-tempOffInput.value=c.tempOff;
-humOnInput.value=c.humOn;
-humOffInput.value=c.humOff;
-soilOnInput.value=c.soilOn;
-soilOffInput.value=c.soilOff;
+  const hum = snap.val();
+
+  document.getElementById("humidity").innerText = hum;
+
+  let text, cls;
+
+  if (hum < 40) {
+    text = "⚠ Dry Air";
+    cls = "warning";
+  }
+  else if (hum > 80) {
+    text = "💧 Very Humid";
+    cls = "danger";
+  }
+  else {
+    text = "🟢 Normal";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("humStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
+});
+  
+
+
+db.ref("sensor/soil").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const soil = snap.val();
+
+  document.getElementById("soil").innerText = soil;
+
+  let text, cls;
+
+  if (soil < 30) {
+    text = "🚨 Needs Water";
+    cls = "danger";
+  }
+  else if (soil < 50) {
+    text = "⚠ Slightly Dry";
+    cls = "warning";
+  }
+  else {
+    text = "🟢 Optimal";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("soilStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
 
 });
 
-fanSwitch.onchange=()=>!fanSwitch.disabled&&db.ref("control/fanManual").set(fanSwitch.checked);
-pumpSwitch.onchange=()=>!pumpSwitch.disabled&&db.ref("control/pumpManual").set(pumpSwitch.checked);
+  /* LIGHT INTENSITY */
 
-modeSelect.onchange=e=>db.ref("control/mode").set(e.target.value);
-pumpModeSelect.onchange=e=>db.ref("control/pumpMode").set(e.target.value);
+db.ref("sensor/light").on("value", snap => {
 
-/* SAVE */
+  if (!snap.exists()) return;
+
+  const lux = snap.val();
+
+  document.getElementById("light").innerText = lux;
+
+  let text, cls;
+
+  if (lux < 200) {
+    text = "🌙 Very Low";
+    cls = "warning";
+  }
+  else if (lux < 1000) {
+    text = "🌥 Moderate";
+    cls = "normal";
+  }
+  else {
+    text = "☀ Bright";
+    cls = "normal";
+  }
+
+  const el = document.getElementById("lightStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
+});
+/* FAN STATUS */
+
+const fanSwitch=document.getElementById("fanSwitch");
+
+db.ref("sensor/fan").on("value",s=>{
+if(!s.exists())return;
+let st=s.val();
+fanSwitch.checked=st;
+fanStatus.innerText=st?"🟢 ON":"🔴 OFF";
+});
+
+/* PUMP STATUS */
+
+const pumpSwitch=document.getElementById("pumpSwitch");
+
+db.ref("sensor/pump").on("value",s=>{
+if(!s.exists())return;
+let st=s.val();
+pumpSwitch.checked=st;
+pumpStatus.innerText=st?"🟢 ON":"🔴 OFF";
+});
+
+/* AIR QUALITY */
+
+db.ref("sensor/air").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const air = snap.val();
+
+  document.getElementById("air").innerText = air;
+
+  let text, cls;
+
+  if (air >= 70) {
+    text = "🟢 Good";
+    cls = "normal";
+  }
+  else if (air >= 40) {
+    text = "⚠ Moderate";
+    cls = "warning";
+  }
+  else {
+    text = "🔴 Poor";
+    cls = "danger";
+  }
+
+  const el = document.getElementById("airStatus");
+  el.innerText = text;
+  el.className = "sensor-status " + cls;
+
+});  
+
+/* FAN MODE */
+
+const modeRef=db.ref("control/mode");
+const fanManual=db.ref("control/fanManual");
+
+modeRef.on("value",s=>{
+let mode=s.val();
+modeSelect.value=mode;
+fanSwitch.disabled=(mode==="AUTO");
+});
+
+modeSelect.addEventListener("change",e=>{
+modeRef.set(e.target.value);
+});
+
+fanSwitch.addEventListener("change",()=>{
+if(!fanSwitch.disabled)
+fanManual.set(fanSwitch.checked);
+});
+
+/* PUMP MODE */
+
+const pumpModeRef=db.ref("control/pumpMode");
+const pumpManual=db.ref("control/pumpManual");
+
+pumpModeRef.on("value",s=>{
+let mode=s.val();
+pumpModeSelect.value=mode;
+pumpSwitch.disabled=(mode==="AUTO");
+});
+
+pumpModeSelect.addEventListener("change",e=>{
+pumpModeRef.set(e.target.value);
+});
+
+pumpSwitch.addEventListener("change",()=>{
+if(!pumpSwitch.disabled)
+pumpManual.set(pumpSwitch.checked);
+});
+
+/* FAN THRESHOLDS */
+
 saveThresholds.onclick=()=>{
 db.ref("control/tempOn").set(parseFloat(tempOnInput.value));
 db.ref("control/tempOff").set(parseFloat(tempOffInput.value));
 db.ref("control/humOn").set(parseFloat(humOnInput.value));
 db.ref("control/humOff").set(parseFloat(humOffInput.value));
-alert("Saved");
+alert("Thresholds Updated");
 };
+
+/* SOIL THRESHOLDS */
 
 saveSoilThresholds.onclick=()=>{
 db.ref("control/soilOn").set(parseInt(soilOnInput.value));
 db.ref("control/soilOff").set(parseInt(soilOffInput.value));
-alert("Saved");
+alert("Soil Settings Saved");
 };
 
-/* DEVICE */
-let lastSeen=0,rssi=0;
+  /* -------- DEVICE STATUS -------- */
 
-db.ref("device").on("value",snap=>{
-let d=snap.val();
-lastSeen=d.lastSeen;
-rssi=d.wifiRSSI;
+let lastSeen = 0;
+let rssi = null;
+
+db.ref("device/lastSeen").on("value", s => {
+  if (s.exists()) lastSeen = s.val();
 });
 
-setInterval(()=>{
-let bars=document.querySelectorAll(".bar");
-let level=rssi>-50?4:rssi>-65?3:rssi>-75?2:1;
-bars.forEach((b,i)=>b.classList.toggle("active",i<level));
-
-if(Date.now()-lastSeen<20000){
-deviceStatus.innerText="🟢 ONLINE";
-healthWiFi.innerText="🟢";
-}else{
-deviceStatus.innerText="🔴 OFFLINE";
-healthWiFi.innerText="🔴";
-}
-},2000);
-
-/* SENSOR STATUS */
-db.ref("sensorStatus").on("value",snap=>{
-let d=snap.val();
-healthDHT.innerText=d.dht?"🟢":"🔴";
-healthSoil.innerText=d.soil?"🟢":"🔴";
+db.ref("device/wifiRSSI").on("value", s => {
+  if (s.exists()) rssi = s.val();
 });
 
+setInterval(() => {
+
+  const statusEl = document.getElementById("deviceStatus");
+  const bars = document.querySelectorAll("#wifiSignal .bar");
+
+  if (!lastSeen) return;
+
+  if (Date.now() - lastSeen < 20000) {
+
+    statusEl.innerText = "🟢 ONLINE";
+    statusEl.className = "online";
+
+    let level = 0;
+
+    if (rssi > -50) level = 4;
+    else if (rssi > -65) level = 3;
+    else if (rssi > -75) level = 2;
+    else if (rssi > -85) level = 1;
+
+    bars.forEach((b,i)=> b.classList.toggle("active", i < level));
+
+  }
+  else {
+
+    statusEl.innerText = "🔴 OFFLINE";
+    statusEl.className = "offline";
+
+    bars.forEach(b => b.classList.remove("active"));
+  }
+
+}, 2000);
+
+ /* -------- SYSTEM HEALTH -------- */
+
+/* DHT Sensor */
+
+db.ref("sensorStatus/dht").on("value", snap => {
+
+  const ok = snap.val();
+
+  document.getElementById("healthDHT").innerText =
+    ok === true ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+
+/* Soil Sensor */
+
+db.ref("sensorStatus/soil").on("value", snap => {
+
+  const ok = snap.val();
+
+  document.getElementById("healthSoil").innerText =
+    ok === true ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+  /* Light Sensor Status */
+
+db.ref("sensor/light").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const val = snap.val();
+
+  document.getElementById("healthLight").innerText =
+    (val > 0) ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+  /* Air Sensor Status */
+
+db.ref("sensor/air").on("value", snap => {
+
+  if (!snap.exists()) return;
+
+  const val = snap.val();
+
+  document.getElementById("healthAir").innerText =
+    (val >= 0) ? "🟢 OK" : "🔴 ERROR";
+
+});
+
+
+/* Fan Relay */
+
+db.ref("sensor/fan").on("value", snap => {
+
+  const state = snap.val();
+
+  document.getElementById("healthFan").innerText =
+    state ? "🟢 ACTIVE" : "⚪ IDLE";
+
+});
+
+
+/* Pump Relay */
+
+db.ref("sensor/pump").on("value", snap => {
+
+  const state = snap.val();
+
+  document.getElementById("healthPump").innerText =
+    state ? "🟢 ACTIVE" : "⚪ IDLE";
+
+});
+
+
+/* WiFi Health */
+
+db.ref("device/wifiRSSI").on("value", snap => {
+
+  const rssi = snap.val();
+
+  if (rssi == null) return;
+
+  let strength = "Weak";
+
+  if (rssi > -60) strength = "Strong";
+  else if (rssi > -75) strength = "Medium";
+
+  document.getElementById("healthWiFi").innerText =
+    "🟢 " + strength;
+
+});
 </script>
 
 </body>
