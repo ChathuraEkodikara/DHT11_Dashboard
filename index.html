@@ -709,6 +709,26 @@ db.ref("control/soilOff").on("value", s => {
   if (s.exists()) soilOffInput.value = s.val();
 });
 
+
+  function loadHistory(path, key){
+
+  db.ref(path).limitToLast(50).on("value", snap => {
+
+    chartData[key] = [];
+
+    snap.forEach(child => {
+
+      const val = child.val().value;
+
+      if (typeof val === "number"){
+        chartData[key].push(val);
+      }
+    });
+
+    refreshCharts();
+  });
+}
+
 /* SENSOR LISTENERS */
 
 db.ref("sensor/temperature").on("value", snap => {
@@ -737,7 +757,7 @@ db.ref("sensor/temperature").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-  pushChartData("temp", temp);
+  loadHistory("history/temperature", "temp");
   refreshCharts();
 });
 
@@ -767,7 +787,7 @@ db.ref("sensor/humidity").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-  pushChartData("hum", hum);
+  loadHistory("history/humidity", "hum");
   refreshCharts();
 });
 
@@ -797,7 +817,7 @@ db.ref("sensor/soil").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-  pushChartData("soil", soil);
+  loadHistory("history/soil", "soil");
   refreshCharts();
 });
 
@@ -830,7 +850,7 @@ db.ref("sensor/light").on("value", snap => {
   document.getElementById("healthLight").innerText =
     (lux > 0) ? "🟢 OK" : "🔴 ERROR";
 
-  pushChartData("light", lux);
+  loadHistory("history/light", "light");
   refreshCharts();
 });
 
@@ -863,7 +883,7 @@ db.ref("sensor/air").on("value", snap => {
   document.getElementById("healthAir").innerText =
     (air >= 0) ? "🟢 OK" : "🔴 ERROR";
 
-  pushChartData("air", air);
+  loadHistory("history/air", "air");
   refreshCharts();
 });
 
