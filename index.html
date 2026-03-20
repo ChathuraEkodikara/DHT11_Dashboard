@@ -608,6 +608,8 @@ loadHistoryStream("history/air", "air");
 
 
 function drawLineChart(canvasId, data, label){
+
+  if (!data || data.length < 2 || !data[0].time) return;
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
@@ -682,17 +684,8 @@ function drawLineChart(canvasId, data, label){
   ctx.fillText("Min: " + minVal.toFixed(1), 10, height - 8);
   ctx.fillText("Max: " + maxVal.toFixed(1), width - 80, height - 8);
   ctx.fillText(label, 10, 15);
-}
 
-function refreshCharts(){
-  drawLineChart("tempChart", chartData.temp, "Temperature");
-  drawLineChart("humChart", chartData.hum, "Humidity");
-  drawLineChart("soilChart", chartData.soil, "Soil Moisture");
-  drawLineChart("lightChart", chartData.light, "Light Intensity");
-  drawLineChart("airChart", chartData.air, "Air Quality");
-}
-
-  ctx.fillStyle = "#cbd5e1";
+    ctx.fillStyle = "#cbd5e1";
 ctx.font = "11px Arial";
 
 ctx.fillText(
@@ -706,6 +699,15 @@ ctx.fillText(
   width - 80,
   height - 5
 );
+}
+
+function refreshCharts(){
+  drawLineChart("tempChart", chartData.temp, "Temperature");
+  drawLineChart("humChart", chartData.hum, "Humidity");
+  drawLineChart("soilChart", chartData.soil, "Soil Moisture");
+  drawLineChart("lightChart", chartData.light, "Light Intensity");
+  drawLineChart("airChart", chartData.air, "Air Quality");
+}
 
 /* THRESHOLD LOADERS */
 
@@ -746,7 +748,7 @@ function loadHistoryStream(path, key){
       if (!data) return;
 
       const value = Number(data.value);
-      const time = data.timestamp || Date.now();
+      const time = data.time || Date.now();
       console.log("RAW:", data);
       console.log("PROCESSED:", chartData[key]);
 
