@@ -647,7 +647,11 @@ function drawLineChart(canvasId, data, label){
   ctx.beginPath();
 
   data.forEach((point, index) => {
-    const x = 40 + (index * (width - 60) / Math.max(data.length - 1, 1));
+    const minTime = data[0].time;
+    const maxTime = data[data.length - 1].time;
+    const timeRange = (maxTime - minTime) || 1;
+
+    const x = 40 + ((point.time - minTime) / timeRange) * (width - 60);
     const y = height - 20 - ((point.value - minVal) / range) * (height - 40);
 
     if(index === 0){
@@ -661,7 +665,11 @@ function drawLineChart(canvasId, data, label){
 
   ctx.fillStyle = "#ffffff";
   data.forEach((point, index) => {
-    const x = 40 + (index * (width - 60) / Math.max(data.length - 1, 1));
+    const minTime = data[0].time;
+    const maxTime = data[data.length - 1].time;
+    const timeRange = (maxTime - minTime) || 1;
+
+    const x = 40 + ((point.time - minTime) / timeRange) * (width - 60);
     const y = height - 20 - ((point.value - minVal) / range) * (height - 40);
 
     ctx.beginPath();
@@ -683,6 +691,21 @@ function refreshCharts(){
   drawLineChart("lightChart", chartData.light, "Light Intensity");
   drawLineChart("airChart", chartData.air, "Air Quality");
 }
+
+  ctx.fillStyle = "#cbd5e1";
+ctx.font = "11px Arial";
+
+ctx.fillText(
+  new Date(minTime).toLocaleTimeString(),
+  40,
+  height - 5
+);
+
+ctx.fillText(
+  new Date(maxTime).toLocaleTimeString(),
+  width - 80,
+  height - 5
+);
 
 /* THRESHOLD LOADERS */
 
