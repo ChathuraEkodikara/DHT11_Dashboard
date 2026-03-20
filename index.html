@@ -547,12 +547,6 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-loadHistoryStream("history/temperature", "temp");
-loadHistoryStream("history/humidity", "hum");
-loadHistoryStream("history/soil", "soil");
-loadHistoryStream("history/light", "light");
-loadHistoryStream("history/air", "air");
-
 /* DOM ELEMENTS */
 
 const modeSelect = document.getElementById("modeSelect");
@@ -603,6 +597,14 @@ const chartData = {
   light: [],
   air: []
 };
+
+  
+loadHistoryStream("history/temperature", "temp");
+loadHistoryStream("history/humidity", "hum");
+loadHistoryStream("history/soil", "soil");
+loadHistoryStream("history/light", "light");
+loadHistoryStream("history/air", "air");
+
 
 
 function drawLineChart(canvasId, data, label){
