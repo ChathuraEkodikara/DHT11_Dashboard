@@ -709,26 +709,32 @@ db.ref("control/soilOff").on("value", s => {
   if (s.exists()) soilOffInput.value = s.val();
 });
 
+function loadHistoryStream(path, key){
 
-  function loadHistory(path, key){
+  chartData[key] = [];
 
-  db.ref(path).limitToLast(50).on("value", snap => {
+  db.ref(path)
+    .limitToLast(50)
+    .on("child_added", snap => {
 
-    chartData[key] = [];
+      const data = snap.val();
 
-    snap.forEach(child => {
+      if (!data) return;
 
-      const val = child.val().value;
+      const value = Number(data.value);
+      const time = data.timestamp || Date.now();
 
-      if (typeof val === "number"){
-        chartData[key].push(val);
+      if (!isNaN(value)){
+        chartData[key].push({ value, time });
+
+        if (chartData[key].length > MAX_POINTS){
+          chartData[key].shift();
+        }
+
+        refreshCharts();
       }
     });
-
-    refreshCharts();
-  });
 }
-
 /* SENSOR LISTENERS */
 
 db.ref("sensor/temperature").on("value", snap => {
@@ -757,7 +763,6 @@ db.ref("sensor/temperature").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-  loadHistory("history/temperature", "temp");
   refreshCharts();
 });
 
@@ -787,7 +792,6 @@ db.ref("sensor/humidity").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-  loadHistory("history/humidity", "hum");
   refreshCharts();
 });
 
@@ -817,7 +821,6 @@ db.ref("sensor/soil").on("value", snap => {
   el.innerText = text;
   el.className = "sensor-status " + cls;
 
-  loadHistory("history/soil", "soil");
   refreshCharts();
 });
 
@@ -850,7 +853,6 @@ db.ref("sensor/light").on("value", snap => {
   document.getElementById("healthLight").innerText =
     (lux > 0) ? "🟢 OK" : "🔴 ERROR";
 
-  loadHistory("history/light", "light");
   refreshCharts();
 });
 
@@ -882,8 +884,6 @@ db.ref("sensor/air").on("value", snap => {
 
   document.getElementById("healthAir").innerText =
     (air >= 0) ? "🟢 OK" : "🔴 ERROR";
-
-  loadHistory("history/air", "air");
   refreshCharts();
 });
 
