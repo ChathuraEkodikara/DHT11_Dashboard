@@ -609,6 +609,9 @@ loadHistoryStream("history/air", "air");
 
 function drawLineChart(canvasId, data, label){
 
+  const validData = data.filter(d => !isNaN(d.time) && d.time > 0);
+  if (validData.length < 2) return;
+
   if (!data || data.length < 2 || !data[0].time) return;
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
@@ -634,12 +637,16 @@ function drawLineChart(canvasId, data, label){
   }
 
   if (data.length === 0){
+
+    const validData = data.filter(d => !isNaN(d.time) && d.time > 0);
+
+    if (validData.length < 2) return;
     ctx.fillStyle = "#94a3b8";
     ctx.font = "14px Arial";
     ctx.fillText("Waiting for live data...", 115, 110);
     return;
   }
-  const values = data.map(d => d.value);
+  const values = validData.map(d => d.value);
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
   const range = (maxVal - minVal) || 1;
@@ -648,9 +655,9 @@ function drawLineChart(canvasId, data, label){
   ctx.lineWidth = 2;
   ctx.beginPath();
 
-  data.forEach((point, index) => {
-    const minTime = data[0].time;
-    const maxTime = data[data.length - 1].time;
+  validData.forEach((point, index) => {
+    const minTime = Math.min(...validData.map(d => d.time));
+    const maxTime = Math.max(...validData.map(d => d.time));
     const timeRange = (maxTime - minTime) || 1;
 
     const x = 40 + ((point.time - minTime) / timeRange) * (width - 60);
@@ -666,9 +673,9 @@ function drawLineChart(canvasId, data, label){
   ctx.stroke();
 
   ctx.fillStyle = "#ffffff";
-  data.forEach((point, index) => {
-    const minTime = data[0].time;
-    const maxTime = data[data.length - 1].time;
+  validData.forEach((point, index) => {
+    const minTime = Math.min(...validData.map(d => d.time));
+const maxTime = Math.max(...validData.map(d => d.time));
     const timeRange = (maxTime - minTime) || 1;
 
     const x = 40 + ((point.time - minTime) / timeRange) * (width - 60);
@@ -754,7 +761,8 @@ function loadHistoryStream(path, key){
 
       const value = Number(data.value);
       const time = Number(data.time);
-      if (isNaN(time)) return; 
+      if (isNaN(value) || isNaN(time) || time <= 0) return;
+      chartData[key].push({ value, time });
       
       console.log("RAW:", data);
       console.log("PROCESSED:", chartData[key]);
