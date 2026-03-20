@@ -547,6 +547,12 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
+loadHistoryStream("history/temperature", "temp");
+loadHistoryStream("history/humidity", "hum");
+loadHistoryStream("history/soil", "soil");
+loadHistoryStream("history/light", "light");
+loadHistoryStream("history/air", "air");
+
 /* DOM ELEMENTS */
 
 const modeSelect = document.getElementById("modeSelect");
@@ -598,13 +604,6 @@ const chartData = {
   air: []
 };
 
-function pushChartData(key, value){
-  if (typeof value !== "number" || isNaN(value)) return;
-  chartData[key].push(value);
-  if (chartData[key].length > MAX_POINTS){
-    chartData[key].shift();
-  }
-}
 
 function drawLineChart(canvasId, data, label){
   const canvas = document.getElementById(canvasId);
@@ -636,18 +635,18 @@ function drawLineChart(canvasId, data, label){
     ctx.fillText("Waiting for live data...", 115, 110);
     return;
   }
-
-  const minVal = Math.min(...data);
-  const maxVal = Math.max(...data);
+  const values = data.map(d => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
   const range = (maxVal - minVal) || 1;
 
   ctx.strokeStyle = "#3b82f6";
   ctx.lineWidth = 2;
   ctx.beginPath();
 
-  data.forEach((value, index) => {
+  data.forEach((point, index) => {
     const x = 40 + (index * (width - 60) / Math.max(data.length - 1, 1));
-    const y = height - 20 - ((value - minVal) / range) * (height - 40);
+    const y = height - 20 - ((point.value - minVal) / range) * (height - 40);
 
     if(index === 0){
       ctx.moveTo(x, y);
@@ -659,9 +658,9 @@ function drawLineChart(canvasId, data, label){
   ctx.stroke();
 
   ctx.fillStyle = "#ffffff";
-  data.forEach((value, index) => {
+  data.forEach((point, index) => {
     const x = 40 + (index * (width - 60) / Math.max(data.length - 1, 1));
-    const y = height - 20 - ((value - minVal) / range) * (height - 40);
+    const y = height - 20 - ((point.value - minVal) / range) * (height - 40);
 
     ctx.beginPath();
     ctx.arc(x, y, 3, 0, Math.PI * 2);
@@ -723,9 +722,11 @@ function loadHistoryStream(path, key){
 
       const value = Number(data.value);
       const time = data.timestamp || Date.now();
+      console.log("RAW:", data);
+      console.log("PROCESSED:", chartData[key]);
 
       if (!isNaN(value)){
-        chartData[key].push({ value, time });
+        chartData[key].push({ value, time }); 
 
         if (chartData[key].length > MAX_POINTS){
           chartData[key].shift();
@@ -734,8 +735,7 @@ function loadHistoryStream(path, key){
         refreshCharts();
       }
     });
-}
-/* SENSOR LISTENERS */
+}/* SENSOR LISTENERS */
 
 db.ref("sensor/temperature").on("value", snap => {
   if (!snap.exists()) return;
@@ -1033,9 +1033,8 @@ db.ref("device/wifiRSSI").on("value", snap => {
   document.getElementById("healthWiFi").innerText = "🟢 " + strength;
 });
 
-/* INITIAL CHART DRAW */
-
 refreshCharts();
+  
 </script>
 
 </body>
