@@ -681,23 +681,28 @@ function drawLineChart(canvasId, data, label){
 
   ctx.fillStyle = "#cbd5e1";
   ctx.font = "12px Arial";
-  ctx.fillText("Min: " + minVal.toFixed(1), 10, height - 8);
-  ctx.fillText("Max: " + maxVal.toFixed(1), width - 80, height - 8);
+  // Min (left)
+ctx.fillText("Min: " + minVal.toFixed(1), 10, height - 5);
+
+// Max (right)
+ctx.fillText("Max: " + maxVal.toFixed(1), width - 100, height - 5);
   ctx.fillText(label, 10, 15);
 
-    ctx.fillStyle = "#cbd5e1";
-ctx.font = "11px Arial";
+ ctx.fillStyle = "#94a3b8";
+ctx.font = "10px Arial";
 
+// Start time
 ctx.fillText(
-  new Date(minTime).toLocaleTimeString(),
+  new Date(minTime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
   40,
-  height - 5
+  height - 18
 );
 
+// End time
 ctx.fillText(
-  new Date(maxTime).toLocaleTimeString(),
-  width - 80,
-  height - 5
+  new Date(maxTime).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
+  width - 90,
+  height - 18
 );
 }
 
@@ -748,7 +753,9 @@ function loadHistoryStream(path, key){
       if (!data) return;
 
       const value = Number(data.value);
-      const time = data.time || Date.now();
+      const time = Number(data.time);
+      if (isNaN(time)) return; 
+      
       console.log("RAW:", data);
       console.log("PROCESSED:", chartData[key]);
 
