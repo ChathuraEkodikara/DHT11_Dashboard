@@ -527,10 +527,10 @@ input:disabled + .slider{
 
       <div class="card health-card">
         <h3>⚙ Device Health</h3>
-
+        <div class="health-item">Uptime : <span id="uptime">--</span></div>
+        <div class="health-item">Last Seen : <span id="lastSeenText">--</span></div>
         <div class="health-item">Fan Relay : <span id="healthFan">--</span></div>
         <div class="health-item">Pump Relay : <span id="healthPump">--</span></div>
-        <div class="health-item">WiFi : <span id="healthWiFi">--</span></div>
       </div>
     </div>
   </section>
@@ -949,6 +949,14 @@ db.ref("sensor/pump").on("value", s => {
   document.getElementById("healthPump").innerText = st ? "🟢 ACTIVE" : "⚪ IDLE";
 });
 
+let uptimeMs = 0;
+
+db.ref("device/uptime").on("value", snap => {
+  if (snap.exists()) {
+    uptimeMs = snap.val();
+  }
+});
+
 /* FAN MODE */
 
 const modeRef = db.ref("control/mode");
@@ -1022,31 +1030,55 @@ db.ref("device/wifiRSSI").on("value", s => {
   if (s.exists()) rssi = s.val();
 });
 
+function formatUptime(ms) {
+  let seconds = Math.floor(ms / 1000);
+  let minutes = Math.floor(seconds / 60);
+  let hours = Math.floor(minutes / 60);
+
+  seconds %= 60;
+  minutes %= 60;
+
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
 setInterval(() => {
   const statusEl = document.getElementById("deviceStatus");
   const bars = document.querySelectorAll("#wifiSignal .bar");
 
+  const uptimeEl = document.getElementById("uptime");
+  const lastSeenEl = document.getElementById("lastSeenText");
+
   if (!lastSeen) return;
 
-  if (Date.now() - lastSeen < 20000) {
+  const diff = Date.now() - lastSeen;
+
+  // 🔹 ONLINE / OFFLINE
+  if (diff < 20000) {
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
-
-    let level = 0;
-
-    if (rssi > -50) level = 4;
-    else if (rssi > -65) level = 3;
-    else if (rssi > -75) level = 2;
-    else if (rssi > -85) level = 1;
-
-    bars.forEach((b, i) => b.classList.toggle("active", i < level));
-  }
-  else {
+  } else {
     statusEl.innerText = "🔴 OFFLINE";
     statusEl.className = "offline";
-
-    bars.forEach(b => b.classList.remove("active"));
   }
+
+  // 🔹 WIFI SIGNAL
+  let level = 0;
+  if (rssi > -50) level = 4;
+  else if (rssi > -65) level = 3;
+  else if (rssi > -75) level = 2;
+  else if (rssi > -85) level = 1;
+
+  bars.forEach((b, i) => b.classList.toggle("active", i < level));
+
+  // 🔹 LAST SEEN (formatted time)
+  const lastSeenDate = new Date(lastSeen);
+  lastSeenEl.innerText = lastSeenDate.toLocaleString();
+
+  // 🔹 UPTIME
+  if (typeof uptimeMs !== "undefined") {
+    uptimeEl.innerText = formatUptime(uptimeMs);
+  }
+
 }, 2000);
 
 /* SYSTEM HEALTH */
