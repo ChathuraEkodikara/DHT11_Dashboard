@@ -418,6 +418,17 @@ input:disabled + .slider{
   .section-title{
     font-size:24px;
   }
+
+}
+
+.site-footer{
+  margin-top:40px;
+  padding:18px 20px;
+  text-align:center;
+  color:#94a3b8;
+  font-size:14px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  background:#111827;
 }
 </style>
 </head>
@@ -1128,33 +1139,30 @@ function formatUptime(ms) {
 setInterval(() => {
   const statusEl = document.getElementById("deviceStatus");
   const bars = document.querySelectorAll("#wifiSignal .bar");
-  const uptimeEl = document.getElementById("uptime");
-  const lastSeenEl = document.getElementById("lastSeenText");
 
   if (!lastSeen) return;
 
-  const diff = Date.now() - lastSeen;
+  const isOnline = (Date.now() - lastSeen < 20000);
 
-  if (diff < 20000) {
+  if (isOnline) {
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
+
+    let level = 0;
+
+    if (rssi > -50) level = 4;
+    else if (rssi > -65) level = 3;
+    else if (rssi > -75) level = 2;
+    else if (rssi > -85) level = 1;
+
+    bars.forEach((b, i) => b.classList.toggle("active", i < level));
+
   } else {
     statusEl.innerText = "🔴 OFFLINE";
     statusEl.className = "offline";
+
+    bars.forEach(b => b.classList.remove("active"));
   }
-
-  let level = 0;
-  if (rssi > -50) level = 4;
-  else if (rssi > -65) level = 3;
-  else if (rssi > -75) level = 2;
-  else if (rssi > -85) level = 1;
-
-  bars.forEach((b, i) => b.classList.toggle("active", i < level));
-
-  const lastSeenDate = new Date(lastSeen);
-  lastSeenEl.innerText = lastSeenDate.toLocaleString();
-
-  uptimeEl.innerText = formatUptime(uptimeMs || 0);
 }, 2000);
 
 /* SYSTEM HEALTH */
@@ -1172,6 +1180,8 @@ db.ref("sensorStatus/soil").on("value", snap => {
 
 refreshCharts();
 </script>
-
+<footer class="site-footer">
+  <p>© 2026 Chathura Kodikara. All rights reserved. AgroPilot IoT Dashboard</p>
+</footer>
 </body>
 </html>
