@@ -1144,6 +1144,9 @@ setInterval(() => {
 
   const isOnline = (Date.now() - lastSeen < 20000);
 
+  document.getElementById("uptime").innerText = formatUptime(uptimeMs);
+  document.getElementById("lastSeenText").innerText = new Date(lastSeen).toLocaleString();
+
   if (isOnline) {
     statusEl.innerText = "🟢 ONLINE";
     statusEl.className = "online";
